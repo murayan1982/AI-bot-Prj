@@ -1,0 +1,23 @@
+# --- Secret Information ---
+.env
+
+# --- Temporary Files & Logs ---
+temp/
+output/log_*.txt
+
+# --- Python Cache ---
+__pycache__/
+*.py[cod]
+*.so
+
+# --- Local Environment ---
+.venv/
+env/
+venv/
+ENV/
+
+# --- OS Generated Files ---
+.DS_Store
+Thumbs.db
+# VTube Studio Tokens
+**/tokens/*.json

@@ -1,0 +1,38 @@
+# config/settings.py
+import os
+from dotenv import load_dotenv
+from .models import MODEL_MASTER
+
+# read .env 
+load_dotenv()
+
+# --- Get API Key ---
+GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+
+# --- Index Selection ---
+SELECT_LLM_INDEX = 25
+SELECT_VOICE_INDEX = 1
+SELECT_TTS_MODEL_INDEX = 2
+
+# ---  Mode Switches ---
+STT_ENGINE = "text"        # "text", "google", "whisper"
+TTS_ENGINE = "elevenlabs"  # "elevenlabs", "none"
+
+# --- Dynamic Assignment ---
+ACTIVE_LLM_MODEL = MODEL_MASTER["google"][SELECT_LLM_INDEX]
+VOICE_ID = MODEL_MASTER["voices"][SELECT_VOICE_INDEX]["id"]
+TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
+
+# --- google safety settings ---
+SAFETY_SETTINGS = {
+    "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
+    "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
+    "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
+    "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
+}
+
+# --- VTube Studio Settings ---
+# VTSの認証トークンを保存するファイルのパスです。
+# 最初の実行時にここにトークンが書き込まれ、次から自動ログインできるようになります。
+VTS_TOKEN_PATH = os.path.join("config", "tokens", "vts_token.json")

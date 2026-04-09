@@ -1,0 +1,10 @@
+google-genai==1.70.0
+python-dotenv==1.2.2
+pyvts==0.3.3
+aiofiles==25.1.0
+websockets==16.0
+pydantic==2.12.5
+
+# For Voice Mode / âπê∫ÉÇÅ[Éhóp
+elevenlabs==2.41.0
+PyAudio==0.2.14
