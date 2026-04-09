@@ -1,0 +1,11 @@
+# License
+
+Copyright (c) 2026 murayan
+
+This software is provided for personal and commercial use.
+
+Permission is granted to use, modify, and build upon this software.
+
+However, redistribution, resale, or sublicensing of this software, in whole or in part, is strictly prohibited.
+
+The author is not responsible for any damages or issues caused by the use of this software.
