@@ -115,6 +115,24 @@ You can adjust:
 
 MIT License
 
+## ⚠️ Disclaimer
+
+This project is provided "as is" without warranty of any kind.
+
+The author is not responsible for any damage, data loss, or issues arising from the use of this software.
+
+Users are responsible for complying with the terms of service and licenses of any third-party services used, including but not limited to:
+
+* Google Gemini API
+* ElevenLabs API
+* Live2D
+
+API keys and usage costs are the sole responsibility of the user.
+
+This repository does not include any proprietary Live2D models or licensed assets. Users must obtain and use their own assets in accordance with their respective licenses.
+
+Use this software at your own risk.
+
 ---
 
 ## 💡 Author
