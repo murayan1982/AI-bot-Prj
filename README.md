@@ -6,6 +6,11 @@ Build your own interactive AI character with voice and animation.
 
 ---
 
+👉 Get the ready-to-use version:
+https://murayan7.gumroad.com/l/qhxey
+
+---
+
 ## ✨ Features
 
 - 🧠 Natural conversation using Google Gemini
