@@ -12,6 +12,7 @@ class STTEngine:
         self.recognizer.pause_threshold = 1.0 
 
     async def listen(self):
+        # Return None immediately if voice input is disabled
         if not INPUT_VOICE_ENABLED:
             return None
         
@@ -21,18 +22,18 @@ class STTEngine:
             
             print("\r[STT/Text Waiting...] ", end="", flush=True)
             try:
-                # 2. Capture voice data (Strict timeout to avoid long hangs)
+                # 2. Capture audio data (Strict timeout for start of speech)
                 audio = await asyncio.to_thread(
                     self.recognizer.listen, 
                     source, 
-                    timeout=5,           # Wait max 5s for speech to start
-                    phrase_time_limit=8  # Max 8s per phrase
+                    timeout=5,           # Wait max 5s for user to start speaking
+                    phrase_time_limit=8  # Max 8s for the phrase duration
                 )
                 
                 print("\r[STT] Recognizing...          ", end="", flush=True)
 
                 # 3. Recognition with a hard timeout using asyncio.wait_for
-                # If Google doesn't respond in 7s, force-quit this task
+                # Prevents freezing if the Google server doesn't respond
                 text = await asyncio.wait_for(
                     asyncio.to_thread(
                         self.recognizer.recognize_google, 
@@ -47,14 +48,13 @@ class STTEngine:
                     return text
 
             except asyncio.TimeoutError:
-                # Triggered when Google API hangs too long
                 print("\r[STT] Recognition timed out.       ", end="", flush=True)
                 return ""
             except (sr.WaitTimeoutError, sr.UnknownValueError):
-                # No speech detected or not understood
+                # Silent or unrecognized audio
                 return ""
             except Exception as e:
-                # Catch-all for other errors to keep the loop running
+                # Log error and continue to avoid crashing the main loop
                 print(f"\n[STT Error]: {type(e).__name__}: {e}")
                 return ""
         
