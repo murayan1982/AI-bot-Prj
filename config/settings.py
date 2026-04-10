@@ -25,8 +25,8 @@ VOICE_ID = MODEL_MASTER["voices"][SELECT_VOICE_INDEX]["id"]
 TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
 
 # --- STT Settings ---
-STT_LANGUAGE = "en-US"
-TARGET_LANGUAGE = "English"
+STT_LANGUAGE = "ja-JP"
+TARGET_LANGUAGE = "Japanese"
 
 # --- google safety settings ---
 SAFETY_SETTINGS = {
