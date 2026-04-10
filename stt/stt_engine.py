@@ -2,8 +2,8 @@
 
 import speech_recognition as sr
 import asyncio
-from config.settings import STT_LANGUAGE
-from config.settings import INPUT_VOICE_ENABLED
+from config.settings import STT_LANGUAGE, INPUT_VOICE_ENABLED
+
 class STTEngine:
     def __init__(self):
         self.recognizer = sr.Recognizer()
@@ -15,42 +15,47 @@ class STTEngine:
         if not INPUT_VOICE_ENABLED:
             return None
         
-        """Capture audio from microphone and convert to text"""
         with self.microphone as source:
-            # Calibrate for ambient noise
+            # 1. Calibrate for ambient noise
             self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
             
             print("\r[STT/Text Waiting...] ", end="", flush=True)
             try:
-                # Capture voice data asynchronously
+                # 2. Capture voice data (Strict timeout to avoid long hangs)
                 audio = await asyncio.to_thread(
                     self.recognizer.listen, 
                     source, 
-                    timeout=10,
-                    phrase_time_limit=8
-                    )
+                    timeout=5,           # Wait max 5s for speech to start
+                    phrase_time_limit=8  # Max 8s per phrase
+                )
                 
                 print("\r[STT] Recognizing...          ", end="", flush=True)
-                # Google Web Speech API Recognition
-                text = await asyncio.to_thread(
-                    self.recognizer.recognize_google, 
-                    audio, 
-                    language=STT_LANGUAGE
+
+                # 3. Recognition with a hard timeout using asyncio.wait_for
+                # If Google doesn't respond in 7s, force-quit this task
+                text = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        self.recognizer.recognize_google, 
+                        audio, 
+                        language=STT_LANGUAGE
+                    ),
+                    timeout=7.0
                 )
+
                 if text:
-                    # Move to next line after successful recognition to keep history
                     print(f"\nUser (Voice): {text}")
                     return text
-            
-            except (sr.WaitTimeoutError, sr.UnknownValueError):  
-                  return ""
-            except sr.WaitTimeoutError:
+
+            except asyncio.TimeoutError:
+                # Triggered when Google API hangs too long
+                print("\r[STT] Recognition timed out.       ", end="", flush=True)
                 return ""
-            except sr.UnknownValueError:
+            except (sr.WaitTimeoutError, sr.UnknownValueError):
+                # No speech detected or not understood
                 return ""
             except Exception as e:
-                print(f"\n[STT Error]: {e}")
+                # Catch-all for other errors to keep the loop running
+                print(f"\n[STT Error]: {type(e).__name__}: {e}")
                 return ""
-            except Exception:
-                return None
+        
         return ""
