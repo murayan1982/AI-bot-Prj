@@ -25,8 +25,17 @@ VOICE_ID = MODEL_MASTER["voices"][SELECT_VOICE_INDEX]["id"]
 TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
 
 # --- STT Settings ---
-STT_LANGUAGE = "ja-JP"
-TARGET_LANGUAGE = "Japanese"
+LANGUAGE_CODE = "ja-JP"
+LANG_MAP = {
+    "ja-JP": "Japanese",
+    "en-US": "English",
+    "zh-CN": "Chinese",
+    "ko-KR": "Korean",
+    "fr-FR": "French",
+    "de-DE": "German"
+}
+STT_LANGUAGE = LANGUAGE_CODE
+TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
 
 # --- Interaction Mode ---
 # True: Use Voice, False: Use Text
