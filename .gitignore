@@ -23,3 +23,7 @@ Thumbs.db
 # VTube Studio Tokens
 config/tokens/
 **/tokens/*.json
+
+# product-only files
+install.bat
+run.bat

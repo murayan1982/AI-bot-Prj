@@ -39,8 +39,8 @@ TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
 
 # --- Interaction Mode ---
 # True: Use Voice, False: Use Text
-INPUT_VOICE_ENABLED = True   # If True, STT starts
-OUTPUT_VOICE_ENABLED = True  # If True, TTS speaks
+INPUT_VOICE_ENABLED = False   # If True, STT starts
+OUTPUT_VOICE_ENABLED = False  # If True, TTS speaks
 
 # --- google safety settings ---
 SAFETY_SETTINGS = {
