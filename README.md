@@ -23,12 +23,10 @@ https://murayan7.gumroad.com/l/qhxey
 
 ## 🚀 Quick Start
 
-### 1. Clone repository
-
-```
-git clone https://github.com/murayan1982/AI-bot-Prj.git
-cd AI-bot-Prj
-```
+1. Download and unzip  
+2. Double-click `install.bat`  
+3. Add API keys to `.env`  
+4. Double-click `run.bat`
 
 ### 2. Install dependencies
 

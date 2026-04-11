@@ -7,8 +7,8 @@ class VTSClient:
     def __init__(self):
         self.token_path = os.path.join("config", "tokens", "vts_token.json")
         self.plugin_info = {
-            "plugin_name": "MyAIBot",
-            "developer": "User",
+            "plugin_name": "AI Voice Bot Framework",
+            "developer": "murayan",
             "authentication_token_path": self.token_path
         }
         self.vts = pyvts.vts(plugin_info=self.plugin_info)

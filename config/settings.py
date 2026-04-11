@@ -13,7 +13,7 @@ ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 # --- LLM Provider Selection ---
 # "google" or "xai"
-LLM_PROVIDER = "xai"
+LLM_PROVIDER = "google"
 
 # Define current index for each provider (Set based on models.py tables)
 # google table size: 34, xai table size: 6
@@ -30,16 +30,31 @@ except (KeyError, IndexError) as e:
     print(f"[Config Error]: Invalid provider or index ({e}). Falling back to Gemini.")
     ACTIVE_LLM_MODEL = MODEL_MASTER["google"][0]
 
+# --- Engine Switches ---
+STT_ENGINE = "text"
+TTS_ENGINE = "elevenlabs"
+
+# --- Interaction Mode ---
+INPUT_VOICE_ENABLED = True
+OUTPUT_VOICE_ENABLED = True
+
 # --- TTS & Voice Selection ---
 SELECT_VOICE_INDEX = 0
 SELECT_TTS_MODEL_INDEX = 2
 
-VOICE_ID = MODEL_MASTER["voices"][SELECT_VOICE_INDEX]["id"]
-TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
+VOICE_MASTER = MODEL_MASTER.get("voices", [])
 
-# --- Engine Switches ---
-STT_ENGINE = "text"        # "text", "google", "whisper"
-TTS_ENGINE = "elevenlabs"  # "elevenlabs", "none"
+if OUTPUT_VOICE_ENABLED:
+    if not VOICE_MASTER:
+        raise EnvironmentError(
+            "VOICE_MASTER is not set. Please add your ElevenLabs Voice ID to .env."
+        )
+    if SELECT_VOICE_INDEX >= len(VOICE_MASTER):
+        raise IndexError("SELECT_VOICE_INDEX is out of range.")
+    VOICE_ID = VOICE_MASTER[SELECT_VOICE_INDEX]["id"]
+else:
+    VOICE_ID = None
+TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
 
 # --- STT Settings ---
 LANGUAGE_CODE = "ja-JP"
@@ -53,11 +68,6 @@ LANG_MAP = {
 }
 STT_LANGUAGE = LANGUAGE_CODE
 TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
-
-# --- Interaction Mode ---
-# True: Use Voice, False: Use Text
-INPUT_VOICE_ENABLED = False   # If True, STT starts
-OUTPUT_VOICE_ENABLED = False  # If True, TTS speaks
 
 # --- google safety settings ---
 SAFETY_SETTINGS = {
