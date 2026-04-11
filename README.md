@@ -1,201 +1,178 @@
-# AI Voice Bot Framework
+# AI Character Framework (LLM + Voice + Live2D)
 
-A modular AI bot framework that integrates **LLM (Gemini) + TTS (ElevenLabs) + Live2D**.
+A modular framework for building **interactive AI characters**
+with voice, emotion, and Live2D integration.
 
-Build your own interactive AI character with voice and animation.
-
----
-
-👉 Get the ready-to-use version:
-https://murayan7.gumroad.com/l/qhxey
+This project is designed for developers who want to build, extend, and experiment with AI-driven character systems.
 
 ---
 
 ## ✨ Features
 
-- 🧠 Natural conversation using Google Gemini
-- 🔊 High-quality voice synthesis via ElevenLabs
-- 🎭 Live2D integration support
-- ⚙️ Flexible configuration (models, voice, speed, etc.)
-- 🧩 Modular structure for easy customization
+* 🔌 **LLM-agnostic design** (OpenAI / Grok / Gemini / others)
+* 🔊 **TTS integration** (e.g. ElevenLabs)
+* 🎭 **Live2D support** via VTube Studio (VTS)
+* 🧠 **Emotion mapping system** (text → expression / hotkey)
+* ⚙️ **Modular architecture** for easy extension
+* 🧩 Clear separation of concerns (LLM / TTS / VTS / Controller)
 
 ---
 
-## 🚀 Quick Start
+## 🎯 Target Users
 
-1. Download and unzip  
-2. Double-click `install.bat`  
-3. Add API keys to `.env`  
-4. Double-click `run.bat`
+* Developers building AI character applications
+* VTuber tool creators
+* Researchers / hobbyists experimenting with human-AI interaction
 
-### 2. Install dependencies
+---
+
+## 🧠 Design Philosophy
+
+* Keep components loosely coupled
+* Make each module replaceable
+* Enable fast experimentation
+
+---
+
+## 🧩 Architecture Overview
 
 ```
+User Input
+   ↓
+[Controller]
+   ↓
+[LLM Adapter] → (OpenAI / Grok / Gemini / etc.)
+   ↓
+[Response Processor]
+   ↓
+ ├─→ [TTS Engine]
+ └─→ [Emotion Mapper] → [VTS Client]
+```
+
+Each component is designed to be replaceable.
+
+---
+
+## 📁 Project Structure
+
+```
+project/
+├─ llm/            # LLM adapters (OpenAI, Grok, etc.)
+├─ tts/            # Text-to-Speech engines
+├─ vts/            # VTube Studio integration
+├─ emotion/        # Emotion mapping logic
+├─ controller/     # Core orchestration
+├─ config/         # Settings & env handling
+└─ main.py         # Entry point
+```
+
+---
+
+## 🧪 Minimal Example (LLM Only)
+
+Run a simple LLM interaction without TTS or VTS:
+
+```python
+import asyncio
+from llm.factory import create_llm
+
+async def main():
+    llm = create_llm("You are a helpful AI.")
+
+    user_input = "Hello"
+    full_text = ""
+
+    for text, emotions in llm.ask_stream(user_input):
+        print(text, end="", flush=True)
+        full_text += text
+
+    print("\n---")
+    print("Final:", full_text)
+
+asyncio.run(main())
+```
+
+This is the core building block of the framework.
+
+---
+
+## 🔌 Extensibility
+
+### Add a new LLM provider
+
+1. Implement a new adapter in `llm/`
+2. Match the interface:
+
+```python
+class BaseLLM: 
+   def ask_stream(self, prompt: str): 
+      yield text, emotions
+```
+
+3. Register it in config
+
+---
+
+### Replace TTS engine
+
+* Modify `tts/` module
+* Ensure output format compatibility
+
+---
+
+### Customize emotion mapping
+
+* Edit mapping logic in `emotion/`
+* Map keywords → VTS hotkeys
+
+---
+
+## ⚙️ Setup
+
+```bash
+git clone <repo>
+cd project
 pip install -r requirements.txt
 ```
 
-### 3. Create `.env`
-
-Create a `.env` file in the root directory:
+Create `.env`:
 
 ```
-GEMINI_API_KEY=your_api_key_here
-ELEVENLABS_API_KEY=your_api_key_here
+LLM_PROVIDER=openai
+OPENAI_API_KEY=xxx
 
-# LLM Model (optional)
-GOOGLE_MODEL=gemini-2.5-flash
-
-# Voice settings (REQUIRED for TTS)
-# Replace with your own Voice ID from ElevenLabs
-VOICE_MASTER='[{"name":"My Voice","id":"YOUR_VOICE_ID"}]'
+TTS_PROVIDER=elevenlabs
+ELEVENLABS_API_KEY=xxx
 ```
 
 ---
 
-### 🔊 How to get Voice ID (ElevenLabs)
+## 🚀 Quick Start (Full System)
 
-1. Go to ElevenLabs
-2. Select a voice
-3. Copy the **Voice ID**
-4. Paste it into `.env`
+Run the full pipeline (LLM + TTS + VTS):
 
----
-
-⚠️ If you do not set a valid Voice ID, voice output will not work.
-
----
-
-## ⚙️ Configuration
-
-Main settings are located in:
-
-```
-config/settings.py
-```
-
-You can adjust:
-
-* LLM model selection
-* Voice settings (via `.env`)
-* TTS speed
-* Engine switches (STT / TTS)
-
-### 4. Run
-
-```
+```bash
 python main.py
 ```
 
 ---
 
-## 🎯 Who is this for?
+## 🚧 Roadmap
 
-- Developers who want to build AI-powered characters
-- People interested in voice-based AI interaction
-- Anyone experimenting with LLM + TTS + Live2D
-
----
-
-## 🗂 Project Structure
-
-```
-my-ai-bot/
-├── config/        # Settings and model configuration
-├── llm/           # LLM integration (Gemini)
-├── tts/           # Voice engine (ElevenLabs)
-├── live2d/        # Live2D integration
-├── prompts/       # System prompts
-├── utils/         # Utility scripts
-├── main.py        # Entry point
-```
-
----
-
-## ⚙️ Configuration
-
-Main settings are located in:
-
-```
-config/settings.py
-```
-
-You can adjust:
-
-- LLM model selection
-- Voice settings
-- TTS speed
-- Engine switches (STT / TTS)
-
-### 🎛 Voice Control
-
-You can enable/disable voice input and output in:
-
-```
-config/settings.py
-```
-
-```python
-INPUT_VOICE_ENABLED = True   # Enable speech-to-text
-OUTPUT_VOICE_ENABLED = True  # Enable text-to-speech
-```
-
-Examples:
-
-* Input ON / Output OFF → Text chatbot with voice input
-* Input OFF / Output ON → Text-to-speech only
-* Both ON → Full voice interaction
-
----
-
-## 🧪 Example Use Cases
-
-- AI VTuber prototype
-- Voice assistant with personality
-- Interactive character systems
-
----
-
-## ⚠️ Notes
-
-- `.env` is required for API keys
-- FFmpeg (`ffplay`) must be installed for audio playback
-
----
-
-## 📌 Roadmap
-
-- Streaming TTS
-- Improved Live2D sync
-- UI for configuration
+* [ ] Multi-LLM runtime switching
+* [ ] Plugin system
+* [ ] GUI for configuration
+* [ ] Local LLM support (Ollama, etc.)
 
 ---
 
 ## 📄 License
+
 Please refer to LICENSE.txt for details. Redistribution and resale are prohibited.
 
-## ⚠️ Important Notice / Disclaimer
-
-1. **API Keys**  
-   This product does **not** include any API keys. Users must supply their own keys for the following services:
-   - ElevenLabs (Text-to-Speech)
-   - Google Gemini API
-
-2. **User Responsibility**  
-   Users are responsible for complying with the terms of service, usage limits, and payment obligations of any third-party services they use.
-
-3. **Generated Content**  
-   Any content generated using third-party APIs may be used in the provider's machine learning, testing, or development processes according to their terms. The author of this product is **not responsible** for how generated content is used by these services.
-
-4. **Live2D / Other Assets**  
-   This product does **not** include any proprietary Live2D models or licensed assets. Users must obtain and use their own assets according to their licenses.
-
-5. **Liability**  
-   This software is provided "as-is" without warranty. The author is not responsible for any damages, data loss, or issues resulting from the use of this software.
-
-By using this product, you agree to these terms.
 ---
 
-## 💡 Author
+## 💡 Notes
 
-Created by murayan
-
+This is a **framework**, not a polished end-user application.
+It is intended to be used as a base for building custom AI character systems.
