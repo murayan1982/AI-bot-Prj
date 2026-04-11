@@ -1,9 +1,7 @@
-# config/settings.py
 import os
 from dotenv import load_dotenv
 from .models import MODEL_MASTER
 
-# read .env 
 load_dotenv()
 
 # --- Get API Key ---
@@ -11,41 +9,39 @@ GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-# --- LLM Provider Selection ---
-CHAT_PRIMARY_LLM = {
-    "provider": "google",
-    "model": "gemini-2.5-flash",
+# --- Debug Settings ---
+DEBUG = True
+DEBUG_ROUTER = True
+DEBUG_FALLBACK = True
+
+# --- LLM Catalog ---
+LLM_CATALOG = {
+    "gemini_fast": {
+        "provider": "google",
+        "model": "gemini-2.5-flash",
+    },
+    "grok_fast": {
+        "provider": "xai",
+        "model": "grok-4-fast-non-reasoning",
+    },
+    "grok_reasoning": {
+        "provider": "xai",
+        "model": "grok-4-fast-reasoning",
+    },
 }
 
-CHAT_FALLBACK_LLM = {
-    "provider": "xai",
-    "model": "grok-4-fast-non-reasoning",
+# --- LLM Route Configuration ---
+LLM_ROUTES = {
+    "chat": {
+        "primary": "gemini_fast",
+        "fallback": "grok_fast",
+    },
+    "code": {
+        "primary": "grok_fast",
+        "fallback": "gemini_fast",
+    },
 }
 
-CODE_PRIMARY_LLM = {
-    "provider": "xai",
-    "model": "grok-4-fast-non-reasoning",
-}
-
-CODE_FALLBACK_LLM = {
-    "provider": "google",
-    "model": "gemini-2.5-flash",
-}
-PRIMARY_LLM = {
-    "provider": "google",
-    "model": "gemini-2.5-flash",
-}
-
-FALLBACK_LLM = {
-    "provider": "xai",
-    "model": "grok-4-fast-non-reasoning",
-}
-
-# Define current index for each provider (Set based on models.py tables)
-CURRENT_SELECTIONS = {
-    "google": 25,  # gemini-3.1-flash-lite-preview
-    "xai": 5      # grok-4-fast-non-reasoning
-}
 # --- Engine Switches ---
 STT_ENGINE = "text"
 TTS_ENGINE = "elevenlabs"
@@ -70,6 +66,7 @@ if OUTPUT_VOICE_ENABLED:
     VOICE_ID = VOICE_MASTER[SELECT_VOICE_INDEX]["id"]
 else:
     VOICE_ID = None
+
 TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
 
 # --- STT Settings ---
@@ -80,12 +77,12 @@ LANG_MAP = {
     "zh-CN": "Chinese",
     "ko-KR": "Korean",
     "fr-FR": "French",
-    "de-DE": "German"
+    "de-DE": "German",
 }
 STT_LANGUAGE = LANGUAGE_CODE
 TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
 
-# --- google safety settings ---
+# --- Google safety settings ---
 SAFETY_SETTINGS = {
     "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
     "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
@@ -96,7 +93,7 @@ SAFETY_SETTINGS = {
 # --- VTube Studio Settings ---
 VTS_DEBUG = False
 VTS_TOKEN_PATH = os.path.join("config", "tokens", "vts_token.json")
-# Emotion alias mapping for VTS hotkeys
+
 VTS_EMOTION_ALIAS = {
     "smile": "heart eyes",
     "happy": "heart eyes",

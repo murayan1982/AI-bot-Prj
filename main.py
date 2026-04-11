@@ -6,19 +6,10 @@ from pathlib import Path
 
 from config.settings import INPUT_VOICE_ENABLED, OUTPUT_VOICE_ENABLED
 from live2d.vts_client import VTSClient
-from llm.factory import create_llm
-from llm.fallback_llm import FallbackLLM
 from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine
 from utils.security import SecurityManager
-
-from llm.router_llm import RouterLLM
-from config.settings import (
-    CHAT_PRIMARY_LLM,
-    CHAT_FALLBACK_LLM,
-    CODE_PRIMARY_LLM,
-    CODE_FALLBACK_LLM,
-)
+from llm.builder import build_llm
 
 ANSI_CLEANER = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]")
 
@@ -122,6 +113,7 @@ async def process_ai_response(
 
         if clean_chunk:
             display_text = ANSI_CLEANER.sub("", clean_chunk)
+            display_text = re.sub(r"\[[a-zA-Z0-9_]+\]", "", display_text)
             if display_text:
                 print(display_text, end="", flush=True)
                 full_log_text += display_text
@@ -141,35 +133,8 @@ async def initialize_components():
     system_instruction = load_system_prompt()
     log_file = create_log_file()
 
-    chat_primary = create_llm(
-        provider=CHAT_PRIMARY_LLM["provider"],
-        model=CHAT_PRIMARY_LLM["model"],
-        system_instruction=system_instruction,
-    )
 
-    chat_fallback = create_llm(
-        provider=CHAT_FALLBACK_LLM["provider"],
-        model=CHAT_FALLBACK_LLM["model"],
-        system_instruction=system_instruction,
-    )
-
-    code_primary = create_llm(
-        provider=CODE_PRIMARY_LLM["provider"],
-        model=CODE_PRIMARY_LLM["model"],
-        system_instruction=system_instruction,
-    )
-
-    code_fallback = create_llm(
-        provider=CODE_FALLBACK_LLM["provider"],
-        model=CODE_FALLBACK_LLM["model"],
-        system_instruction=system_instruction,
-    )
-
-    chat_llm = FallbackLLM(chat_primary, chat_fallback)
-    code_llm = FallbackLLM(code_primary, code_fallback)
-
-    llm = RouterLLM(chat_llm, code_llm)
-
+    llm = build_llm(system_instruction)
     vts = VTSClient()
     stt = STTEngine() if use_stt else None
     tts = VoiceEngine() if use_tts else None

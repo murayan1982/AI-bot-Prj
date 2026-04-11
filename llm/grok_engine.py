@@ -84,4 +84,4 @@ class GrokEngine(BaseLLM):
             self.history.append({"role": "assistant", "content": full_response})
 
         except Exception as e:
-            yield f"Error: {str(e)}", []
+            raise RuntimeError(f"{self.provider_name} failed: {e}") from e

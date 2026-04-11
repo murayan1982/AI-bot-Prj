@@ -1,6 +1,6 @@
 from typing import Generator, Tuple, List
 from llm.base import BaseLLM
-
+from config.settings import DEBUG, DEBUG_FALLBACK
 
 class FallbackLLM(BaseLLM):
     def __init__(self, primary: BaseLLM, fallback: BaseLLM):
@@ -23,5 +23,7 @@ class FallbackLLM(BaseLLM):
         try:
             yield from self.primary.ask_stream(text)
         except Exception as e:
-            print(f"\n[Fallback triggered] {e}")
+            if DEBUG and DEBUG_FALLBACK:
+                print(f"\n[Fallback triggered] {self.primary.provider_name} -> {self.fallback.provider_name}")
+                print(f"[Fallback reason] {e}")
             yield from self.fallback.ask_stream(text)

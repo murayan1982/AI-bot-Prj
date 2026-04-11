@@ -90,7 +90,7 @@ class GeminiEngine(BaseLLM):
                 yield clean_text, emotions
 
         except Exception as e:
-            yield f"Error: {str(e)}", []
+            raise RuntimeError(f"{self.provider_name} failed: {e}") from e
 
     def _refresh_session_with_mood(self):
         try:
