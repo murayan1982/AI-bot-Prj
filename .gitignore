@@ -25,5 +25,5 @@ config/tokens/
 **/tokens/*.json
 
 # product-only files
-install.bat
-run.bat
+/install.bat
+/run.bat
