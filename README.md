@@ -15,6 +15,14 @@ The goal is to let developers **focus on features**, not infrastructure.
 
 ---
 
+## Support / Download
+
+If you’d like to support the project or get updates:
+
+👉 https://murayan7.gumroad.com/l/qhxey
+
+---
+
 ## Features (v1.3.0)
 
 * Multi-LLM support (Gemini / Grok)
