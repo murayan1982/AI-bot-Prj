@@ -20,7 +20,9 @@ def handle_background_task_result(task: asyncio.Task) -> None:
             print(f"[Async Error] {exc}")
 
 
-def schedule_expression_change(vts: VTSClient, emotion: str) -> None:
+def schedule_expression_change(vts: VTSClient | None, emotion: str) -> None:
+    if vts is None:
+        return
     task = asyncio.create_task(vts.change_expression(emotion))
     task.add_done_callback(handle_background_task_result)
 

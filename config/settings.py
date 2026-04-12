@@ -4,17 +4,59 @@ from .models import MODEL_MASTER
 
 load_dotenv()
 
-# --- Get API Key ---
+# =========================================
+# Environment / API Keys
+# =========================================
+
 GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-# --- Debug Settings ---
-DEBUG = True
-DEBUG_ROUTER = True
-DEBUG_FALLBACK = True
 
-# --- LLM Catalog ---
+# =========================================
+# Runtime Flags
+# =========================================
+
+# Master debug switch
+DEBUG_MASTER = False
+
+# Component debug flags
+DEBUG = DEBUG_MASTER
+DEBUG_ROUTER = DEBUG_MASTER
+DEBUG_FALLBACK = DEBUG_MASTER
+DEBUG_VTS = DEBUG_MASTER
+DEBUG_TTS = DEBUG_MASTER
+DEBUG_STT = DEBUG_MASTER
+
+# Backward compatibility
+VTS_DEBUG = DEBUG_VTS
+
+# Runtime feature toggles
+INPUT_VOICE_ENABLED = False
+OUTPUT_VOICE_ENABLED = False
+ENABLE_VTS = False
+
+# Engine selection
+STT_ENGINE = "text"
+TTS_ENGINE = "elevenlabs"
+
+
+# =========================================
+# User-Selectable Configuration
+# =========================================
+
+# Voice / TTS selection
+SELECT_VOICE_INDEX = 0
+SELECT_TTS_MODEL_INDEX = 2
+
+# Language selection
+LANGUAGE_CODE = "ja-JP"
+
+
+# =========================================
+# Definition Tables
+# =========================================
+
 LLM_CATALOG = {
     "gemini_fast": {
         "provider": "google",
@@ -30,7 +72,6 @@ LLM_CATALOG = {
     },
 }
 
-# --- LLM Route Configuration ---
 LLM_ROUTES = {
     "chat": {
         "primary": "gemini_fast",
@@ -42,35 +83,23 @@ LLM_ROUTES = {
     },
 }
 
-# --- Engine Switches ---
-STT_ENGINE = "text"
-TTS_ENGINE = "elevenlabs"
+STRONG_CODE_KEYWORDS = [
+    "error",
+    "exception",
+    "traceback",
+    "bug",
+    "fix",
+    "コード",
+    "python",
+]
 
-# --- Interaction Mode ---
-INPUT_VOICE_ENABLED = False
-OUTPUT_VOICE_ENABLED = False
+WEAK_CODE_KEYWORDS = [
+    "function",
+    "class",
+    "method",
+    "api",
+]
 
-# --- TTS & Voice Selection ---
-SELECT_VOICE_INDEX = 0
-SELECT_TTS_MODEL_INDEX = 2
-
-VOICE_MASTER = MODEL_MASTER.get("voices", [])
-
-if OUTPUT_VOICE_ENABLED:
-    if not VOICE_MASTER:
-        raise EnvironmentError(
-            "VOICE_MASTER is not set. Please add your ElevenLabs Voice ID to .env."
-        )
-    if SELECT_VOICE_INDEX >= len(VOICE_MASTER):
-        raise IndexError("SELECT_VOICE_INDEX is out of range.")
-    VOICE_ID = VOICE_MASTER[SELECT_VOICE_INDEX]["id"]
-else:
-    VOICE_ID = None
-
-TTS_MODEL_ID = MODEL_MASTER["tts_models"][SELECT_TTS_MODEL_INDEX]
-
-# --- STT Settings ---
-LANGUAGE_CODE = "ja-JP"
 LANG_MAP = {
     "ja-JP": "Japanese",
     "en-US": "English",
@@ -79,20 +108,13 @@ LANG_MAP = {
     "fr-FR": "French",
     "de-DE": "German",
 }
-STT_LANGUAGE = LANGUAGE_CODE
-TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
 
-# --- Google safety settings ---
 SAFETY_SETTINGS = {
     "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
     "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
     "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
     "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
 }
-
-# --- VTube Studio Settings ---
-VTS_DEBUG = False
-VTS_TOKEN_PATH = os.path.join("config", "tokens", "vts_token.json")
 
 VTS_EMOTION_ALIAS = {
     "smile": "heart eyes",
@@ -110,4 +132,33 @@ VTS_EMOTION_ALIAS = {
     "shock": "shock sign",
     "neutral": "remove expressions",
 }
+
+
+# =========================================
+# Derived Runtime Values
+# =========================================
+
+VOICE_MASTER = MODEL_MASTER.get("voices", [])
+TTS_MODEL_MASTER = MODEL_MASTER.get("tts_models", [])
+
+STT_LANGUAGE = LANGUAGE_CODE
+TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
+
+VTS_TOKEN_PATH = os.path.join("config", "tokens", "vts_token.json")
 DEFAULT_EMOTION = "remove expressions"
+
+if OUTPUT_VOICE_ENABLED:
+    if not VOICE_MASTER:
+        raise EnvironmentError(
+            "VOICE_MASTER is not set. Please add your ElevenLabs Voice ID to .env."
+        )
+    if SELECT_VOICE_INDEX >= len(VOICE_MASTER):
+        raise IndexError("SELECT_VOICE_INDEX is out of range.")
+    VOICE_ID = VOICE_MASTER[SELECT_VOICE_INDEX]["id"]
+else:
+    VOICE_ID = None
+
+if SELECT_TTS_MODEL_INDEX >= len(TTS_MODEL_MASTER):
+    raise IndexError("SELECT_TTS_MODEL_INDEX is out of range.")
+
+TTS_MODEL_ID = TTS_MODEL_MASTER[SELECT_TTS_MODEL_INDEX]

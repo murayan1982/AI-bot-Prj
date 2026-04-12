@@ -1,7 +1,7 @@
 from typing import Generator, Tuple, List
 from llm.base import BaseLLM
-from config.settings import DEBUG, DEBUG_ROUTER
-
+#from config.settings import DEBUG, DEBUG_ROUTER
+from config import settings
 
 class RouterLLM(BaseLLM):
     def __init__(self, chat_llm: BaseLLM, code_llm: BaseLLM):
@@ -23,20 +23,12 @@ class RouterLLM(BaseLLM):
     def _select_llm(self, text: str) -> BaseLLM:
         lowered = text.lower()
 
-        strong_code_keywords = [
-            "python", "javascript", "typescript", "traceback",
-            "exception", "stack trace", "sql", "html", "css",
-            "api", "json", "yaml", "regex", "git", "github",
-            "pythonエラー", "スタックトレース",
-        ]
-
-        weak_code_keywords = [
-            "code", "bug", "debug", "error", "function", "class",
-            "コード", "実装", "バグ", "デバッグ", "エラー", "関数", "クラス",
-        ]
-
-        strong_hits = sum(1 for keyword in strong_code_keywords if keyword in lowered)
-        weak_hits = sum(1 for keyword in weak_code_keywords if keyword in lowered)
+        strong_hits = sum(
+            1 for keyword in settings.STRONG_CODE_KEYWORDS if keyword in lowered
+        )
+        weak_hits = sum(
+            1 for keyword in settings.WEAK_CODE_KEYWORDS if keyword in lowered
+        )
 
         if strong_hits >= 1:
             return self.code_llm
@@ -49,7 +41,11 @@ class RouterLLM(BaseLLM):
     def ask_stream(self, text: str) -> Generator[Tuple[str, List[str]], None, None]:
         selected_llm = self._select_llm(text)
 
-        if DEBUG and DEBUG_ROUTER:
-            print(f"\n[Router] selected: {selected_llm.provider_name} / {selected_llm.model_name}")
+        if settings.DEBUG_ROUTER:
+            route = "code" if selected_llm is self.code_llm else "chat"
+            print(
+                f"[Router] route={route} -> "
+                f"{selected_llm.provider_name} / {selected_llm.model_name}"
+            )
 
         yield from selected_llm.ask_stream(text)

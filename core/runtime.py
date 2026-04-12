@@ -7,6 +7,7 @@ from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine
 from utils.security import SecurityManager
 from llm.builder import build_llm
+from config.settings import ENABLE_VTS
 
 def create_log_file() -> Path:
     log_dir = Path("output")
@@ -20,13 +21,15 @@ def load_system_prompt() -> str:
         raise FileNotFoundError("prompts/system_base.txt not found.")
     return prompt_path.read_text(encoding="utf-8")
 
-def print_system_status(use_stt: bool, use_tts: bool, llm) -> None:
+def print_system_status(use_stt: bool, use_tts: bool, vts, llm) -> None:
     input_mode = "Voice (STT)" if use_stt else "Keyboard (Text)"
     output_mode = "Voice (TTS)" if use_tts else "Text Only"
+    live2d_mode = "Enabled" if vts is not None else "Disabled"
 
     print("\n--- System Active ---")
     print(f"Input Mode:  {input_mode}")
     print(f"Output Mode: {output_mode}")
+    print(f"Live2D:      {live2d_mode}")
     print(f"LLM:         {llm.provider_name} / {llm.model_name}")
 
 async def initialize_components() -> dict:
@@ -39,12 +42,18 @@ async def initialize_components() -> dict:
     log_file = create_log_file()
 
     llm = build_llm(system_instruction)
-    vts = VTSClient()
+    vts = None
     stt = STTEngine() if use_stt else None
     tts = VoiceEngine() if use_tts else None
 
-    await vts.connect()
-    print_system_status(use_stt, use_tts, llm)
+    if ENABLE_VTS:
+        try:
+            vts = VTSClient()
+            await vts.connect()
+        except Exception as e:
+            print(f"[VTS] Disabled due to error: {e}")
+            vts = None
+    print_system_status(use_stt, use_tts, vts, llm)
 
     return {
         "use_stt": use_stt,
