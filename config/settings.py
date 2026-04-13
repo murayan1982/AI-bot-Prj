@@ -33,8 +33,8 @@ VTS_DEBUG = DEBUG_VTS
 
 # Runtime feature toggles
 INPUT_VOICE_ENABLED = False
-OUTPUT_VOICE_ENABLED = False
-ENABLE_VTS = False
+OUTPUT_VOICE_ENABLED = True
+ENABLE_VTS = True
 
 # Engine selection
 STT_ENGINE = "text"
@@ -60,7 +60,8 @@ LANGUAGE_CODE = "ja-JP"
 LLM_CATALOG = {
     "gemini_fast": {
         "provider": "google",
-        "model": "gemini-2.5-flash",
+        #"model": "gemini-2.5-flash",
+        "model": "gemini-3.1-flash-lite-preview",
     },
     "grok_fast": {
         "provider": "xai",
