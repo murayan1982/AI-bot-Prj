@@ -1,0 +1,143 @@
+[Goal]
+
+開発者向けAIフレームワーク
+音声会話 + Live2D の体験基盤
+構成（preset / character / plugin / LLM）で挙動を切り替えられる設計
+
+---
+
+[v1.4] Config Foundation
+
+- config/loader.py の完成
+- RuntimeConfig 導入
+- env → preset → character → default の優先順位確立
+- presets 読み込み対応
+- character 読み込み対応
+- input / output language 分離
+- runtime に config 注入
+- 最小 plugin 基盤作成
+- 起動時に設定表示
+- run scripts 整備
+- README 最低限整備
+
+Goal:
+設定ベースで動作が切り替わる「土台」が完成する
+
+---
+
+[v1.5] Multi-LLM Base
+
+- LLM provider 抽象化（interface 設計）
+- OpenAI provider 追加
+- Claude provider 追加
+- Gemini provider 整理
+- llm/ ディレクトリ構成整理
+- preset に LLM 設定を持たせる
+  - llm_provider
+  - llm_model
+- APIキー管理整理（env）
+- provider切替がpresetで可能になる
+- エラーメッセージ改善（未設定キーなど）
+
+Goal:
+複数LLMを切り替えて使える状態になる
+
+---
+
+[v1.6] Practical Presets & Performance
+
+- presets の拡充
+  - text_chat_openai
+  - text_chat_claude
+  - text_vts
+  - voice_vts
+  - bilingual系
+- plugin 経由で外部APIを叩ける構造整理
+- STT / TTS の構造整理（将来のcloud対応を見据える）
+
+[Performance]
+- 入力〜応答〜音声出力の処理時間を計測
+- ボトルネックの可視化
+- 初回レスポンスの待ち時間短縮
+- 不要な同期処理の整理
+
+Goal:
+実用的なプリセットが揃い、基本的な動作が軽くなる
+
+---
+
+[v1.7] UX & Streaming
+
+- LLMストリーミング応答対応
+- TTS逐次再生（ストリーム再生）
+- 途中表示 / typing表現
+- 音声会話の体感レスポンス改善
+- エラーメッセージ・ログの改善
+- 初回セットアップ導線改善
+
+Goal:
+「速くて使いやすい」と感じる体験になる
+
+---
+
+[v1.8] Plugin Expansion
+
+- plugin APIの安定化
+- plugin manager の拡張
+- builtin plugin の追加
+  - console logger 強化
+  - simple memory
+  - external API sample
+- pluginのサンプル充実
+- ドキュメント整備（plugin作成方法）
+
+Goal:
+「拡張できるフレームワーク」として成立する
+
+---
+
+[v1.9] Stabilization
+
+- 軽いテスト整備
+- preset / plugin の動作確認
+- 互換性チェック
+- 不要ログ削減
+- エッジケース修正
+- サンプルプロジェクト追加
+
+Goal:
+安定して配布できる状態にする
+
+---
+
+[v2.0] Framework Release
+
+- ドキュメント全面整備
+- Quick Start 完成
+- サンプル構成の洗練
+- 初心者でも使える導線確立
+- リポジトリ構成の最終整理
+
+Goal:
+「フレームワークとして完成」と言える状態
+
+---
+
+[Design Principles]
+
+- 構造 → 抽象化 → UX → 拡張 → 安定 の順で進める
+- 1日1責務・壊さず終える
+- preset / character / plugin を中心に拡張する
+- loader は「読むだけ」、処理ロジックを持たせない
+- runtime に責務を集約する
+
+---
+
+[Future Ideas (Optional)]
+
+- 自動LLM fallback
+- キャッシュ機構
+- 非同期パイプライン最適化
+- Web UI / 設定画面
+- クラウド設定保存
+- マルチセッション対応
