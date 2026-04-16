@@ -1,7 +1,7 @@
 import asyncio
-
 from core.runtime import initialize_components, shutdown_components
 from core.session import ChatSession
+from config.loader import load_runtime_config
 
 async def main():
     runtime = None
@@ -22,5 +22,16 @@ async def main():
             except Exception as e:
                 print(f"[Cleanup Error] {e}")
 
+def main() -> None:
+    config = load_runtime_config()
+
+    print("[Config] Loaded in main.py")
+    print(config)
+    print(config.system_prompt)
+
+    # Day5でここを使う
+    # runtime = initialize_components(config)
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
