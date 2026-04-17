@@ -1,168 +1,276 @@
-AI Conversation Framework
+# AI Character Conversation Framework
 
-A modular AI conversation framework with:
+## What is this?
 
-* Multi-LLM routing (Chat / Code)
-* Voice input/output support (STT / TTS)
-* Live2D emotion integration
-* Extensible architecture
+This is a **developer-oriented framework** for building AI character interaction systems.
 
----
+It provides a modular foundation combining:
 
-## Prerequisites
+* Multi-LLM conversation (routing + fallback)
+* Voice input/output (STT / TTS)
+* Live2D (VTube Studio) integration
+* Emotion-driven character expression
 
-Before starting, ensure you have:
+The goal is to let developers **focus on features**, not infrastructure.
 
-* Python 3.10+
-* pip
+## Features (v1.3.0)
 
-Optional (for voice features):
-
-* ffmpeg
-* Microphone (for STT)
-* Speakers (for TTS)
-
-You also need at least one API key:
-
-* OpenAI
-* Google (Gemini)
-* xAI (Grok)
+* Multi-LLM support (Gemini / Grok)
+* Automatic routing (chat vs code)
+* Fallback handling
+* Voice input (STT) / output (TTS)
+* Live2D (VTS) optional integration
+* Hook-based extensibility
+* Clean modular architecture
 
 ---
 
-## Quick Start
+## Architecture
 
-1. git clone <your-repo>
-2. cd <your-project>
-3. pip install -r requirements.txt
-4. cp .env.example .env
-
-Edit .env:
-
-LLM_PROVIDER=google
-GOOGLE_API_KEY=your_api_key_here
-
-Run:
-
-python main.py
-
-Example:
-
-User: hello
-AI: Hi there! How can I help you today?
+```
+main.py
+  ↓
+runtime (init)
+  ↓
+session (loop)
+  ↓
+pipeline
+  ├── LLM (router + fallback)
+  ├── TTS
+  ├── VTS (emotion)
+  └── Hooks
+```
 
 ---
 
-## Routing Logic
+## Project Structure
 
-The framework automatically switches between Chat and Code modes.
+```
+core/
+  runtime.py
+  session.py
+  pipeline.py
+  events.py
 
-How it works:
+llm/
+  base.py
+  factory.py
+  builder.py
+  router_llm.py
+  fallback_llm.py
 
-* Keyword-based detection
-* If input matches STRONG_CODE_KEYWORDS -> Code mode
-* Otherwise -> Chat mode
+live2d/
+  vts_client.py
 
-Example:
+config/
+  settings.py
+  models.py
 
-* "write python code" -> Code
-* "how are you" -> Chat
+stt/
+tts/
 
-You can customize behavior in:
+main.py
+```
 
+---
+
+## Setup
+
+### 1. Clone
+
+```bash
+git clone https://github.com/murayan1982/AI-bot-Prj.git
+cd AI-bot-Prj
+```
+
+### 2. Install
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Environment Variables
+
+Create `.env` from `.env.example`:
+
+- Windows:
+  copy .env.example .env
+
+- Mac / Linux:
+  cp .env.example .env
+
+Then open `.env` and add your API keys:
+
+# Required
+GEMINI_API_KEY=your_api_key_here
+
+# Optional
+XAI_API_KEY=your_xai_api_key_here
+ELEVENLABS_API_KEY=your_key_here
+
+# Voice configuration (JSON format)
+VOICE_MASTER=[{"id":"your_voice_id_here","name":"MyVoice"}]
+```
+
+---
+
+## Runtime Configuration
+
+All runtime behavior is controlled in:
+
+```
 config/settings.py
+```
+
+Key flags:
+
+```python
+INPUT_VOICE_ENABLED = False
+OUTPUT_VOICE_ENABLED = False
+ENABLE_VTS = False
+DEBUG_MASTER = False
+```
 
 ---
 
-## Features
+## Running Modes (examples)
 
-* Multi-LLM support (OpenAI / Gemini / Grok)
-* Automatic routing (Chat / Code)
-* STT -> LLM -> TTS pipeline
-* Live2D emotion mapping
-* Modular plugin-ready structure
+These are common configurations (fully customizable):
 
----
+| Mode        | STT | TTS | VTS |
+| ----------- | --- | --- | --- |
+| Text only   | ❌   | ❌   | ❌   |
+| Text + VTS  | ❌   | ❌   | ✅   |
+| Voice + VTS | ✅   | ✅   | ✅   |
 
-## Voice Setup Notes
-
-To use STT/TTS features:
-
-- Install ffmpeg (required for audio processing)
-  - Windows: choco install ffmpeg
-  - Mac: brew install ffmpeg
-
-- Ensure your microphone is properly recognized by your OS
-
-Note:
-Some audio libraries may require additional system-level setup.
-
-## Emotion Mapping
-Live2D integration uses WebSocket communication (e.g. VTube Studio API).
-The system can map AI responses to Live2D expressions.
-
-Example:
-
-* happy -> smile
-* angry -> frown
-* surprised -> wide eyes
-
-Customize in:
-
-vts/emotion_map.py
+These are example configurations. STT, TTS, and VTS can be enabled independently.
 
 ---
 
-## Configuration Priority
+## LLM Routing & Fallback
 
-Settings are loaded in the following order:
+The framework automatically selects models:
 
-1. .env
-2. config/settings.py
+* Chat → fast conversational model
+* Code → reasoning-capable model
 
-.env overrides default settings.
+If a request fails:
 
----
+* Fallback LLM is automatically used
 
-## Commercial Usage
+Configuration:
 
-You are allowed to:
-
-* Sell applications built using this framework
-* Create AI characters for streaming (YouTube / Twitch)
-* Provide paid AI services or SaaS
-
-You are NOT allowed to:
-
-* Resell this framework itself
-* Redistribute source code as a standalone product
-* Repackage and sell with minor modifications
+* `LLM_CATALOG`
+* `LLM_ROUTES`
+* `STRONG_CODE_KEYWORDS`
 
 ---
 
-## Notes
+## Voice Configuration
 
-* Model names (e.g. gemini-2.5-flash) may change over time
-* Please refer to each provider’s official documentation
+Voice IDs are loaded from `.env`:
 
-## Attribution
+```env
+VOICE_MASTER=[{"id":"voice_id","name":"MyVoice"}]
+```
 
-When using this framework in a product or service,
-you must include attribution to the original author.
+Selection is done in `settings.py`:
 
-Example:
+```python
+SELECT_VOICE_INDEX = 0
+```
 
-"Powered by AI Conversation Framework by murayan"
+---
 
-This can be placed in:
-- Application credits
-- Website footer
-- Video descriptions
+## Live2D (VTube Studio)
+
+* Optional feature (`ENABLE_VTS`)
+* Token is generated automatically on first run
+* Emotion mapping is configurable:
+
+```python
+VTS_EMOTION_ALIAS = {
+    "smile": "heart eyes",
+    "sad": "eyes cry",
+}
+```
+
+---
+
+## Hooks (Extension Points)
+
+```python
+on_user_input(text)
+on_llm_chunk(chunk)
+on_llm_complete(response)
+on_error(error)
+```
+
+Use cases:
+
+* Logging
+* Streaming UI
+* External integrations
+
+---
+
+## Minimal Example
+
+```python
+## Minimal Example
+
+import asyncio
+from llm.factory import create_llm
+
+async def main():
+    llm = create_llm(
+        provider="google",
+        system_instruction="You are a helpful AI",
+        model="gemini-2.5-flash"
+    )
+
+    for chunk, emotions in llm.ask_stream("Hello"):
+        print(chunk, end="")
+
+asyncio.run(main())
+```
+
+---
+
+## Roadmap
+
+* Runtime mode presets (v1.4)
+* Plugin system
+* Local LLM support
+* GUI launcher
 
 ---
 
 ## License
 
-This project is licensed under a custom commercial license.
+Custom License
 
-See LICENSE.txt for details.
+* Personal / commercial use: allowed
+* Modification: allowed
+* Redistribution: restricted
+
+---
+
+## Notes
+
+* `.env` must match `.env.example`
+* Voice IDs are required only when TTS is enabled
+* VTS requires VTube Studio running locally
+
+---
+
+## Author
+
+Framework for building **AI-powered character interaction systems**.
+
+## 💡 Support
+
+If you find this project useful, consider supporting development:
+
+Gumroad: https://murayan7.gumroad.com/l/qhxey
+BOOTH: https://murayan.booth.pm/items/8182937

@@ -1,8 +1,6 @@
 import asyncio
 import re
 from contextlib import suppress
-
-from live2d.vts_client import VTSClient
 from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine
 from core.events import emit
@@ -13,20 +11,6 @@ ANSI_CLEANER = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]")
 async def ainput(prompt: str = "") -> str:
     return await asyncio.to_thread(input, prompt)
 
-def handle_background_task_result(task: asyncio.Task) -> None:
-    with suppress(asyncio.CancelledError):
-        exc = task.exception()
-        if exc is not None:
-            print(f"[Async Error] {exc}")
-
-
-def schedule_expression_change(vts: VTSClient | None, emotion: str) -> None:
-    if vts is None:
-        return
-    task = asyncio.create_task(vts.change_expression(emotion))
-    task.add_done_callback(handle_background_task_result)
-
-
 async def get_user_input(use_stt: bool, stt: STTEngine | None) -> str:
     if not use_stt or stt is None:
         return (await ainput("\nUser: ")).strip()
@@ -34,27 +18,40 @@ async def get_user_input(use_stt: bool, stt: STTEngine | None) -> str:
     stt_task = asyncio.create_task(stt.listen())
     kb_task = asyncio.create_task(ainput("\n[Keyboard or Speak]: "))
 
-    done, pending = await asyncio.wait(
-        [stt_task, kb_task],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
+    try:
+        while True:
+            done, _ = await asyncio.wait(
+                [stt_task, kb_task],
+                return_when=asyncio.FIRST_COMPLETED,
+            )
 
-    user_input = ""
-    for task in done:
-        result = task.result()
-        if result:
-            user_input = str(result).strip()
-            break
+            if kb_task in done:
+                result = kb_task.result()
+                return str(result).strip() if result else ""
 
-    for task in pending:
-        task.cancel()
+            if stt_task in done:
+                result = stt_task.result()
+                user_input = str(result).strip() if result else ""
 
-    for task in pending:
-        with suppress(asyncio.CancelledError):
-            await task
+                if user_input:
+                    return user_input
 
-    return user_input
+                # v1.4 fallback:
+                # If STT returns empty first, do not return empty input.
+                # Keep waiting for keyboard input.
+                if not kb_task.done():
+                    result = await kb_task
+                    return str(result).strip() if result else ""
 
+                result = kb_task.result()
+                return str(result).strip() if result else ""
+
+    finally:
+        if not stt_task.done():
+            stt_task.cancel()
+
+        if not kb_task.done():
+            kb_task.cancel()
 
 async def wait_for_tts_playback(tts: VoiceEngine) -> None:
     tts.flush()
@@ -77,8 +74,8 @@ async def process_ai_response(
     for clean_chunk, emotions in llm.ask_stream(user_input):
         if emotions:
             full_log_text += "".join(f"[{emotion}]" for emotion in emotions)
-            for emotion in emotions:
-                schedule_expression_change(vts, emotion)
+            # v1.4: automatic VTS expression control is not supported.
+            # v1.5 will handle emotion tags via plugin-based expression control.
 
         if clean_chunk:
             display_text = ANSI_CLEANER.sub("", clean_chunk)
