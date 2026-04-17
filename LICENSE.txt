@@ -34,34 +34,57 @@ REDISTRIBUTION REQUIREMENTS
 
 If you distribute any product that includes this Software:
 
-- You MUST include this LICENSE file
+- You MUST include this LICENSE file when distributing source code or package files
+- For binary, hosted, or application-based distribution, you MUST make the license terms
+  reasonably accessible within the product, documentation, website, or application credits
 - You MUST provide proper attribution to the original author
+
+Proper attribution must be reasonably visible to end users or recipients,
+such as in an application credits screen, website footer, documentation,
+README, video description, or similar location.
+
+Example attribution:
+
+"Powered by AI Conversation Framework by murayan"
 
 --------------------------------------------------
 DISCLAIMER
 --------------------------------------------------
 
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW,
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY.
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW,
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
 
 --------------------------------------------------
 CLARIFICATION OF USAGE
 --------------------------------------------------
 
-The following is explicitly permitted:
+The following is also permitted:
 
-- Selling AI characters, applications, or services that use this Software as an internal engine
+- Selling or distributing plugins, extensions, characters, presets, or add-ons
+  that are designed to work with this Software, as long as they do not include
+  or redistribute this Software itself in whole or in large part
 
 The following is explicitly prohibited:
 
-- Selling developer tools, templates, or frameworks where the primary value is this Software itself
+- Selling developer tools, templates, SDKs, starter kits, or boilerplate projects
+  where the primary value is this Software itself
 - Redistributing this Software as a base project for other developers
+- Publishing a competing framework, template, or boilerplate that is substantially
+  based on this Software
 
 In other words:
 End-user products are allowed.
 Developer-facing redistribution is prohibited.
 
 This License shall be governed by the laws of Japan.
+
+The Tokyo District Court shall have exclusive jurisdiction as the court of first instance
+over any disputes arising out of or in connection with this License or the Software.

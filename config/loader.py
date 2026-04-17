@@ -47,8 +47,10 @@ def load_runtime_config() -> RuntimeConfig:
         preset_data.get("output_language_code", "ja"),
         default="en",
     )
-    character_name = preset_data.get("character", "default")
-
+    character_name = preset_data.get(
+        "character_name",
+        preset_data.get("character", "default"),
+    )
     input_voice_enabled = preset_data.get("input_voice_enabled", False)
     output_voice_enabled = preset_data.get("output_voice_enabled", False)
     vts_enabled = preset_data.get("vts_enabled", False)

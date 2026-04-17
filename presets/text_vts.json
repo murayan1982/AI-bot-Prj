@@ -6,5 +6,5 @@
   "output_voice_enabled": true,
   "vts_enabled": true,
   "tts_provider": "local",
-  "character": "default"
+  "character_name": "default"
 }

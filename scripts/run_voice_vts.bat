@@ -3,7 +3,7 @@ setlocal
 
 cd /d "%~dp0.."
 
-set APP_PRESET=text_chat
+set APP_PRESET=voice_vts
 python main.py
 
 endlocal

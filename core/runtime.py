@@ -19,12 +19,6 @@ def create_log_file() -> Path:
     timestamp = datetime.datetime.now().strftime("%y%m%d_%H%M")
     return log_dir / f"log_{timestamp}.txt"
 
-def load_system_prompt() -> str:
-    prompt_path = Path("prompts/system_base.txt")
-    if not prompt_path.exists():
-        raise FileNotFoundError("prompts/system_base.txt not found.")
-    return prompt_path.read_text(encoding="utf-8")
-
 def print_system_status(use_stt: bool, use_tts: bool, vts, llm) -> None:
     input_mode = "Voice (STT)" if use_stt else "Keyboard (Text)"
     output_mode = "Voice (TTS)" if use_tts else "Text Only"
@@ -124,7 +118,7 @@ async def initialize_components(config) -> dict:
             "on_error": [],
         },
     })
-    
+
     plugin_manager = PluginManager()
     runtime["plugin_manager"] = plugin_manager
 
