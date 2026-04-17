@@ -13,6 +13,12 @@ class RuntimeConfig:
     app_preset: str = "default"
     input_language_code: str = "ja"
     output_language_code: str = "ja"
+
+    input_voice_enabled: bool = False
+    output_voice_enabled: bool = False
+    vts_enabled: bool = False
+    tts_provider: str = "none"
+
     character_name: str = "default"
     character_profile: dict = field(default_factory=dict)
     system_prompt: str = ""
@@ -38,12 +44,23 @@ def load_runtime_config() -> RuntimeConfig:
     output_language_code = preset_data.get("output_language_code", "ja")
     character_name = preset_data.get("character", "default")
 
+    input_voice_enabled = preset_data.get("input_voice_enabled", False)
+    output_voice_enabled = preset_data.get("output_voice_enabled", False)
+    vts_enabled = preset_data.get("vts_enabled", False)
+    tts_provider = preset_data.get("tts_provider", "none")
+
     profile, system_prompt = load_character_data(character_name)
 
     config = RuntimeConfig(
         app_preset=preset_name,
         input_language_code=input_language_code,
         output_language_code=output_language_code,
+
+        input_voice_enabled=input_voice_enabled,
+        output_voice_enabled=output_voice_enabled,
+        vts_enabled=vts_enabled,
+        tts_provider=tts_provider,
+
         character_name=character_name,
         character_profile=profile,
         system_prompt=system_prompt,

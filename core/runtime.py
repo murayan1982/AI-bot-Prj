@@ -37,8 +37,8 @@ async def initialize_components(config) -> dict:
 
     runtime = {}
     runtime["config"] = config
-    use_stt = INPUT_VOICE_ENABLED
-    use_tts = OUTPUT_VOICE_ENABLED
+    use_stt = config.input_voice_enabled
+    use_tts = config.output_voice_enabled
 
     system_instruction = load_system_prompt()
     log_file = create_log_file()
@@ -46,9 +46,16 @@ async def initialize_components(config) -> dict:
     llm = build_llm(system_instruction)
     vts = None
     stt = STTEngine() if use_stt else None
-    tts = VoiceEngine() if use_tts else None
+    tts = None
+    if use_tts:
+        if config.tts_provider == "none":
+            tts = None
+        elif config.tts_provider in ("local", "elevenlabs"):
+            tts = VoiceEngine()
+        else:
+            raise ValueError(f"Unsupported tts_provider: {config.tts_provider}")
 
-    if ENABLE_VTS:
+    if config.vts_enabled:
         try:
             vts = VTSClient()
             connected = await vts.connect()
@@ -63,6 +70,10 @@ async def initialize_components(config) -> dict:
     print(f"Character: {config.character_name}")
     print(f"Input Lang: {config.input_language_code}")
     print(f"Output Lang: {config.output_language_code}")
+    print(f"Input Voice: {config.input_voice_enabled}")
+    print(f"Output Voice: {config.output_voice_enabled}")
+    print(f"VTS Enabled: {config.vts_enabled}")
+    print(f"TTS Provider: {config.tts_provider}")
     print("======================")
     print_system_status(use_stt, use_tts, vts, llm)
 
