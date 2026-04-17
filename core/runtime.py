@@ -1,13 +1,10 @@
 import datetime
 from pathlib import Path
-
-from config.settings import INPUT_VOICE_ENABLED, OUTPUT_VOICE_ENABLED
 from live2d.vts_client import VTSClient
 from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine
 from utils.security import SecurityManager
 from llm.builder import build_llm
-from config.settings import ENABLE_VTS
 
 def create_log_file() -> Path:
     log_dir = Path("output")
@@ -40,18 +37,28 @@ async def initialize_components(config) -> dict:
     use_stt = config.input_voice_enabled
     use_tts = config.output_voice_enabled
 
-    system_instruction = load_system_prompt()
-    log_file = create_log_file()
+    base_system_prompt = config.system_prompt.strip()
+    language_instruction = (
+        f"You must answer in the language specified by output_language_code: "
+        f"{config.output_language_code}."
+    )
+    if base_system_prompt:
+        system_instruction = f"{base_system_prompt}\n\n{language_instruction}"
+    else:
+        system_instruction = language_instruction
 
     llm = build_llm(system_instruction)
+        
+    log_file = create_log_file()
+
     vts = None
     stt = STTEngine(language_code=config.input_language_code) if use_stt else None
-    tts = VoiceEngine(language_code=config.output_language_code)
+    tts = None
     if use_tts:
         if config.tts_provider == "none":
             tts = None
         elif config.tts_provider in ("local", "elevenlabs"):
-            tts = VoiceEngine()
+            tts = VoiceEngine(language_code=config.output_language_code)
         else:
             raise ValueError(f"Unsupported tts_provider: {config.tts_provider}")
 
@@ -77,6 +84,10 @@ async def initialize_components(config) -> dict:
     print("======================")
     print(f"STT Lang:     {config.input_language_code}")
     print(f"TTS Lang:     {config.output_language_code}")
+    print(f"LLM Output Lang: {config.output_language_code}")
+    print("--- Final System Instruction ---")
+    print(system_instruction)
+    print("--------------------------------")
     print_system_status(use_stt, use_tts, vts, llm)
 
     runtime.update({
