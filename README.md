@@ -13,7 +13,7 @@ It provides a modular foundation combining:
 
 The goal is to let developers **focus on features**, not infrastructure.
 
-## Features (v1.3.0)
+## Features (v1.4.0)
 
 * Multi-LLM support (Gemini / Grok)
 * Automatic routing (chat vs code)
@@ -116,7 +116,7 @@ VOICE_MASTER=[{"id":"your_voice_id_here","name":"MyVoice"}]
 
 ## Runtime Configuration
 
-All runtime behavior is controlled in:
+APP_PRESET + presets/*.json
 
 ```
 config/settings.py

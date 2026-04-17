@@ -25,7 +25,22 @@ Goal:
 
 ---
 
-[v1.5] Multi-LLM Base
+[v1.5] Emotion / VTS Expression Control
+
+- LLM応答にemotion tagを付与
+- emotion tagを本文から分離
+- 表示 / TTS用テキストからemotion tagを除去
+- characterごとのVTS hotkey mapping
+- VTS hotkey trigger
+- plugin経由でemotion処理を拡張可能にする
+- VTS未接続 / hotkey未設定でも会話を継続
+
+Goal:
+AIキャラクターの表情制御がFramework構成で扱える状態になる
+
+---
+
+[v1.6] Multi-LLM Base & Practical Presets
 
 - LLM provider 抽象化（interface 設計）
 - OpenAI provider 追加
@@ -38,14 +53,6 @@ Goal:
 - APIキー管理整理（env）
 - provider切替がpresetで可能になる
 - エラーメッセージ改善（未設定キーなど）
-
-Goal:
-複数LLMを切り替えて使える状態になる
-
----
-
-[v1.6] Practical Presets & Performance
-
 - presets の拡充
   - text_chat_openai
   - text_chat_claude
@@ -62,7 +69,7 @@ Goal:
 - 不要な同期処理の整理
 
 Goal:
-実用的なプリセットが揃い、基本的な動作が軽くなる
+複数LLMをpresetで切り替えられ、実用的なプリセットが揃う
 
 ---
 
