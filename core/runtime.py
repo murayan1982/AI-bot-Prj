@@ -1,7 +1,5 @@
 import datetime
 from pathlib import Path
-
-from pydantic import config
 from live2d.vts_client import VTSClient
 from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine

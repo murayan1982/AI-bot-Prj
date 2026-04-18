@@ -178,6 +178,58 @@ class VTSClient:
         except Exception as e:
             print(f"[VTS Error] Hotkey cache failed: {e}")
 
+    async def trigger_hotkey(self, hotkey_name: str) -> bool:
+        """
+        Trigger a VTube Studio hotkey by hotkey name safely.
+
+        Returns:
+            bool: True if triggered, False otherwise.
+
+        Notes:
+            - Never raises to caller
+            - Safe when VTS is disconnected
+            - Safe when hotkey name is empty or missing
+        """
+        if not self.is_connected:
+            self._debug(f"[VTS] trigger_hotkey skipped: not connected ({hotkey_name})")
+            return False
+
+        if not hotkey_name or not hotkey_name.strip():
+            self._debug("[VTS] trigger_hotkey skipped: empty hotkey name")
+            return False
+
+        normalized_name = hotkey_name.strip()
+        hotkey_id = self.hotkey_cache.get(normalized_name)
+
+        if not hotkey_id:
+            hotkey_id = self.hotkey_cache.get(normalized_name.lower())
+
+        if not hotkey_id:
+            self._debug(f"[VTS] Hotkey not found in cache: {hotkey_name}")
+
+            # Safe fallback: refresh cache once and retry
+            await self._update_hotkey_cache()
+
+            hotkey_id = self.hotkey_cache.get(normalized_name)
+            if not hotkey_id:
+                hotkey_id = self.hotkey_cache.get(normalized_name.lower())
+
+        if not hotkey_id:
+            self._debug(f"[VTS] trigger_hotkey skipped: unresolved hotkey ({hotkey_name})")
+            return False
+
+        try:
+            async with self.lock:
+                request = self.vts.vts_request.requestTriggerHotKey(hotkey_id)
+                await self.vts.request(request)
+
+            self._debug(f"[VTS] Hotkey triggered: {hotkey_name}")
+            return True
+
+        except Exception as e:
+            print(f"[VTS Error] Hotkey trigger failed ({hotkey_name}): {e}")
+            return False
+
     async def change_expression(self, emotion: str):
         if not self.is_connected:
             return
@@ -192,19 +244,11 @@ class VTSClient:
         if original != normalized:
             self._debug(f"[VTS] Emotion mapped: {original} -> {normalized}")
 
-        hotkey_id = self.hotkey_cache.get(normalized)
-        if not hotkey_id:
-            self._debug(f"[VTS] No hotkey for emotion: {emotion} -> {normalized}")
-            return
+        resolved = normalized.strip()
+        ok = await self.trigger_hotkey(resolved)
 
-        try:
-            async with self.lock:
-                request = self.vts.vts_request.requestTriggerHotKey(hotkey_id)
-                await self.vts.request(request)
-
-        except Exception as e:
-            self.is_connected = False
-            print(f"[VTS Error] Send failed ({emotion}): {e}")
+        if not ok:
+            self._debug(f"[VTS] No hotkey for emotion: {emotion} -> {resolved}")
 
     async def reconnect(self):
         self.is_connected = False
