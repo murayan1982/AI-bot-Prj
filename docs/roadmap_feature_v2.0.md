@@ -34,9 +34,15 @@ Goal:
 - VTS hotkey trigger
 - plugin経由でemotion処理を拡張可能にする
 - VTS未接続 / hotkey未設定でも会話を継続
+- RuntimeConfig を main runtime flow の正本として扱う方針を明確化
+- character-level hotkey mapping によって Framework abstraction と model-specific hotkey を分離
+- runtime直結MVPで emotion / VTS 経路を成立させる
+- legacy path（change_expression / VTS_EMOTION_ALIAS / old global flags）を明示
+- settings.py / models.py の責務再配分方針を整理する
 
 Goal:
-AIキャラクターの表情制御がFramework構成で扱える状態になる
+AIキャラクターの表情制御がFramework構成で扱え、
+主経路と legacy path の境界が明確になった状態にする
 
 ---
 
@@ -61,6 +67,11 @@ AIキャラクターの表情制御がFramework構成で扱える状態になる
   - bilingual系
 - plugin 経由で外部APIを叩ける構造整理
 - STT / TTS の構造整理（将来のcloud対応を見据える）
+- settings.py / models.py の責務再配分を開始
+- provider registry を settings.py から分離
+- secrets / developer defaults / legacy compatibility の責務を切り分ける
+- RuntimeConfig を source of truth とする構成へ寄せる
+- preset / character / runtime / registry の責務境界を整理する
 
 [Note]
 v1.5開発時点の既知課題:
@@ -75,7 +86,8 @@ v1.5開発時点の既知課題:
 - 不要な同期処理の整理
 
 Goal:
-複数LLMをpresetで切り替えられ、実用的なプリセットが揃う
+複数LLMをpresetで切り替えられ、
+設定責務の境界が明確なFramework構成へ進める
 
 ---
 
@@ -143,6 +155,10 @@ Goal:
 - preset / character / plugin を中心に拡張する
 - loader は「読むだけ」、処理ロジックを持たせない
 - runtime に責務を集約する
+- RuntimeConfig を runtime behavior の source of truth とする
+- settings.py は最終的に神ファイル化させない
+- provider/model registry は runtime config から分離する
+- legacy compatibility は main framework flow から分けて管理する
 
 ---
 
