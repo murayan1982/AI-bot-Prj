@@ -12,21 +12,22 @@ from .defaults import (
     SELECT_VOICE_INDEX,
     SELECT_TTS_MODEL_INDEX,
 )
+from .legacy import (
+    VTS_DEBUG,
+    INPUT_VOICE_ENABLED,
+    OUTPUT_VOICE_ENABLED,
+    ENABLE_VTS,
+    VTS_EMOTION_ALIAS,
+)
 from registry.tts import TTS_MODEL_MASTER
 
 # =========================================
 # Runtime Flags
 # =========================================
 
-# Backward compatibility
-VTS_DEBUG = DEBUG_VTS
-
 # Runtime feature toggles
 # Legacy global flags kept for backward compatibility.
 # Main runtime behavior is controlled by RuntimeConfig / presets.
-INPUT_VOICE_ENABLED = False
-OUTPUT_VOICE_ENABLED = False
-ENABLE_VTS = True
 
 # Engine selection
 STT_ENGINE = "text"
@@ -104,26 +105,6 @@ SAFETY_SETTINGS = {
     "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
     "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
 }
-
-# Legacy fallback aliases for old change_expression() path.
-# v1.5 main emotion flow uses character-level vts_hotkeys mapping.
-VTS_EMOTION_ALIAS = {
-    "smile": "heart eyes",
-    "happy": "heart eyes",
-    "grin": "heart eyes",
-    "laugh": "heart eyes",
-    "joy": "heart eyes",
-    "love": "heart eyes",
-    "sad": "eyes cry",
-    "cry": "eyes cry",
-    "angry": "angry sign",
-    "mad": "angry sign",
-    "surprised": "shock sign",
-    "surprise": "shock sign",
-    "shock": "shock sign",
-    "neutral": "remove expressions",
-}
-
 
 # =========================================
 # Derived Runtime Values
