@@ -8,8 +8,7 @@ It should not contain runtime secrets or user-specific environment values.
 LLM_CATALOG = {
     "gemini_fast": {
         "provider": "google",
-        #"model": "gemini-3.1-flash-lite-preview",
-        "model": "gemini-does-not-exist",
+        "model": "gemini-3.1-flash-lite-preview",
     },
     "grok_fast": {
         "provider": "xai",

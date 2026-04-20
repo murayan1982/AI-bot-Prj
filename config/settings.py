@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from .models import MODEL_MASTER
+from registry.tts import TTS_MODEL_MASTER
 
 load_dotenv()
 
@@ -144,7 +145,6 @@ VTS_EMOTION_ALIAS = {
 # =========================================
 
 VOICE_MASTER = MODEL_MASTER.get("voices", [])
-TTS_MODEL_MASTER = MODEL_MASTER.get("tts_models", [])
 
 STT_LANGUAGE = LANGUAGE_CODE
 TARGET_LANGUAGE = LANG_MAP.get(LANGUAGE_CODE, "English")
