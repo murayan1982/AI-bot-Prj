@@ -7,6 +7,14 @@ from core.emotion import resolve_emotion_hotkey
 
 
 class EmotionVTSPlugin(BasePlugin):
+    """
+    Built-in plugin that bridges detected emotion events to VTS hotkey actions.
+
+    This plugin does not generate emotion labels itself.
+    It listens to the runtime emotion event, resolves the configured
+    character-level hotkey mapping, and triggers VTS if available.
+    """
+
     name: str = "emotion_vts"
     enabled: bool = True
 
@@ -14,11 +22,21 @@ class EmotionVTSPlugin(BasePlugin):
         self.runtime: dict[str, Any] | None = None
 
     def setup(self, runtime: dict[str, Any]) -> None:
+        """
+        Register the plugin's event hook during runtime setup.
+        """
         self.runtime = runtime
+
+        # Event hooks are registered through runtime["hooks"] rather than
+        # through the PluginManager lifecycle itself.
         hooks = runtime.setdefault("hooks", {})
         hooks.setdefault("on_emotion_detected", []).append(self.on_emotion_detected)
 
     async def on_emotion_detected(self, emotion: str) -> None:
+        """
+        Resolve a detected emotion into a character-specific VTS hotkey
+        and trigger it when the runtime is configured to do so.
+        """
         if self.runtime is None:
             return
 

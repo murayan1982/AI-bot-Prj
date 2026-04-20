@@ -7,7 +7,10 @@ from plugins.base import BasePlugin
 
 class ConsoleLoggerPlugin(BasePlugin):
     """
-    Built-in plugin that logs runtime lifecycle events to the console.
+    Minimal built-in lifecycle plugin.
+
+    This plugin is intentionally simple and acts as a small example of
+    setup/on_start/on_stop behavior without event-hook registration.
     """
 
     name: str = "console_logger"

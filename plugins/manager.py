@@ -9,7 +9,12 @@ class PluginManager:
     """
     Minimal plugin manager.
 
-    Responsible for registering plugins and calling lifecycle hooks.
+    Responsible for:
+    - registering plugins
+    - calling plugin lifecycle hooks
+
+    Event-hook dispatch is handled separately through runtime["hooks"]
+    and emit(), not by this manager directly.
     """
 
     def __init__(self) -> None:

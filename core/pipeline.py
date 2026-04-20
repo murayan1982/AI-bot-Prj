@@ -12,6 +12,7 @@ ANSI_CLEANER = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]")
 async def ainput(prompt: str = "") -> str:
     return await asyncio.to_thread(input, prompt)
 
+
 async def get_user_input(use_stt: bool, stt: STTEngine | None) -> str:
     if not use_stt or stt is None:
         return (await ainput("\nUser: ")).strip()
@@ -19,6 +20,7 @@ async def get_user_input(use_stt: bool, stt: STTEngine | None) -> str:
     print("[STT Waiting...]")
     result = await stt.listen()
     return str(result).strip() if result else ""
+
 
 async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) -> None:
     try:
@@ -34,6 +36,7 @@ async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) 
         print("[TTS Wait Warning] playback wait timed out")
     except Exception as e:
         print(f"[TTS Wait Error] {e}")
+
 
 async def process_ai_response(
     *,
@@ -60,6 +63,8 @@ async def process_ai_response(
             if not clean_chunk and not emotions:
                 continue
 
+            # Runtime event: on_emotion_detected
+            # Prefer the first emitted emotion from the LLM stream if available.
             if emotions and not emotion_triggered:
                 try:
                     emotion = str(emotions[0]).strip().lower()
@@ -81,6 +86,9 @@ async def process_ai_response(
                 emotion_parsed = True
                 pending_prefix = ""
 
+                # Runtime event: on_emotion_detected
+                # Fallback path when emotion is resolved from parsed text instead
+                # of an explicit streamed emotion list.
                 if not emotion_triggered:
                     try:
                         await emit(runtime, "on_emotion_detected", parsed.emotion)
@@ -93,6 +101,8 @@ async def process_ai_response(
             if display_text:
                 print(display_text, end="", flush=True)
                 full_log_text += display_text
+
+                # Runtime event: on_llm_chunk
                 await emit(runtime, "on_llm_chunk", display_text)
 
                 if use_tts and tts is not None:
@@ -103,6 +113,7 @@ async def process_ai_response(
         if use_tts and tts is not None:
             await wait_for_tts_playback(tts)
 
+        # Runtime event: on_llm_complete
         await emit(runtime, "on_llm_complete", full_log_text)
         return full_log_text
 

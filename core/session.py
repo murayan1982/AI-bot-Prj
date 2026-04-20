@@ -5,6 +5,7 @@ from core.pipeline import process_ai_response, get_user_input, wait_for_tts_play
 from core.utils.logging import append_log
 from core.events import emit
 
+
 class ChatSession:
     def __init__(self, runtime: dict):
         self.runtime = runtime
@@ -25,6 +26,7 @@ class ChatSession:
                 if not user_input:
                     continue
 
+                # Runtime event: on_user_input
                 await emit(self.runtime, "on_user_input", user_input)
 
                 if user_input.lower() in {"exit", "quit"}:
@@ -55,6 +57,7 @@ class ChatSession:
                 break
 
             except Exception as e:
+                # Runtime event: on_error
                 await emit(self.runtime, "on_error", e)
                 print(f"\n[Main Error] {e}")
                 await asyncio.sleep(1)

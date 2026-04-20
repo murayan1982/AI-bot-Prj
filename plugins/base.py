@@ -6,9 +6,15 @@ from typing import Any
 
 class BasePlugin(ABC):
     """
-    Base class for all plugins.
+    Base class for runtime plugins.
 
-    Plugins can hook into runtime lifecycle events.
+    Plugins share a small lifecycle contract:
+    - setup(runtime)
+    - on_start(runtime)
+    - on_stop(runtime)
+
+    More granular runtime events are handled separately through
+    runtime["hooks"] and emit(), usually registered during setup().
     """
 
     name: str = "base_plugin"
@@ -18,7 +24,8 @@ class BasePlugin(ABC):
         """
         Called once when the plugin is registered or initialized.
 
-        Override this method if the plugin needs access to runtime resources.
+        Override this method if the plugin needs access to runtime resources
+        or wants to register event hooks through runtime["hooks"].
         """
         pass
 
