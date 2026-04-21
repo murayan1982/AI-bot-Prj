@@ -46,48 +46,37 @@ AIキャラクターの表情制御がFramework構成で扱え、
 
 ---
 
-[v1.6] Multi-LLM Base & Practical Presets
+[v1.6] Config Responsibility Cleanup & Framework Readability
 
-- LLM provider 抽象化（interface 設計）
-- OpenAI provider 追加
-- Claude provider 追加
-- Gemini provider 整理
-- llm/ ディレクトリ構成整理
-- preset に LLM 設定を持たせる
-  - llm_provider
-  - llm_model
-- APIキー管理整理（env）
-- provider切替がpresetで可能になる
-- エラーメッセージ改善（未設定キーなど）
-- presets の拡充
-  - text_chat_openai
-  - text_chat_claude
+- settings.py / models.py の責務再配分
+- LLM registry を settings.py から分離
+- TTS registry を models.py から分離
+- secrets / developer defaults / legacy compatibility の責務を切り分ける
+- RuntimeConfig を runtime behavior の source of truth とする構成へ寄せる
+- preset / character / runtime / registry の責務境界を整理する
+- loader / runtime flow の可読性を改善する
+- preset の役割を整理し、`text_chat` を safe default として明確化する
+- default preset を廃止し、起動導線を `text_chat` 基準に揃える
+- plugin / hook contract を整理する
+- developer configuration guide を追加する
+- plugin / hook contract documentation を追加する
+- cleanup / consistency pass を行う
+- config cleanup 後の preset 動作確認を行う
+  - text_chat
   - text_vts
   - voice_vts
-  - bilingual系
-- plugin 経由で外部APIを叩ける構造整理
-- STT / TTS の構造整理（将来のcloud対応を見据える）
-- settings.py / models.py の責務再配分を開始
-- provider registry を settings.py から分離
-- secrets / developer defaults / legacy compatibility の責務を切り分ける
-- RuntimeConfig を source of truth とする構成へ寄せる
-- preset / character / runtime / registry の責務境界を整理する
+  - bilingual_ja_en
 
 [Note]
-v1.5開発時点の既知課題:
-`voice_vts` では、STT入力待ちとキーボード入力待ちを同時に走らせる構造が一部不安定。
-主因はTTS再生そのものではなく、`stt.listen()` とキーボード入力タスクの並列待機 / cleanup 周りにある可能性が高い。
-この点は v1.6 の STT / TTS 構造整理で再確認・再設計する。
-
-[Performance]
-- 入力〜応答〜音声出力の処理時間を計測
-- ボトルネックの可視化
-- 初回レスポンスの待ち時間短縮
-- 不要な同期処理の整理
+v1.5 開発時点から継続している既知の観測事項:
+`voice_vts` では、環境やタイミングにより VTS / TTS 経路に軽い不安定さが見えることがある。
+v1.6 では config / responsibility cleanup を優先し、
+音声経路の本格的な安定化や再設計は今後の課題として扱う。
 
 Goal:
-複数LLMをpresetで切り替えられ、
-設定責務の境界が明確なFramework構成へ進める
+設定責務の境界が明確で、
+RuntimeConfig / preset / character / registry を中心に読みやすく拡張しやすい
+Framework 構成へ整理された状態にする
 
 ---
 

@@ -16,7 +16,7 @@ The goal is to let developers **focus on features**, not infrastructure.
 
 ---
 
-## Features (v1.5.0)
+## Current Features
 
 - Multi-LLM support (Gemini / Grok)
 - Automatic routing (chat vs code)
@@ -51,7 +51,7 @@ plugins
 VTS hotkey trigger
 ```
 
-Main v1.5 emotion flow:
+Main emotion flow:
 
 ```text
 User input
@@ -519,7 +519,7 @@ See LICENSE.txt for details.
 - Voice IDs are required only when TTS is enabled
 - VTS requires VTube Studio running locally
 - If a VTS hotkey is not configured, expression control is skipped safely
-- In the current v1.5 implementation, long TTS playback may occasionally trigger a wait timeout warning even when playback still works in practice
+- In the current implementation, long TTS playback may occasionally trigger a wait timeout warning even when playback still works in practice.
 
 ---
 
