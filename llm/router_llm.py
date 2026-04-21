@@ -1,6 +1,5 @@
 from typing import Generator, Tuple, List
 from llm.base import BaseLLM
-#from config.settings import DEBUG, DEBUG_ROUTER
 from config import settings
 
 class RouterLLM(BaseLLM):

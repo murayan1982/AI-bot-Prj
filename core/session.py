@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 
-from core.pipeline import process_ai_response, get_user_input, wait_for_tts_playback
+from core.pipeline import process_ai_response, get_user_input
 from core.utils.logging import append_log
 from core.events import emit
 
@@ -43,12 +43,6 @@ class ChatSession:
                     tts=tts,
                     use_tts=use_tts,
                 )
-
-                #if use_tts and tts is not None:
-                #    try:
-                #        await asyncio.wait_for(wait_for_tts_playback(tts), timeout=15.0)
-                #    except asyncio.TimeoutError:
-                #        print("[TTS Warning] playback wait timeout", flush=True)
 
                 append_log(log_file, start_ts, user_input, full_log_text)
 

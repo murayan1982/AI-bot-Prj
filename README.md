@@ -204,7 +204,7 @@ The framework loads the selected preset and builds a `RuntimeConfig` object at s
 - selected character
 - selected character hotkey mapping
 
-## Configuration Flow
+### Configuration Flow
 
 Runtime behavior is configured in the following order:
 
@@ -383,6 +383,7 @@ Current configuration is defined in:
 
 - `LLM_CATALOG`
 - `LLM_ROUTES`
+- `registry/llm.py`
 
 ---
 

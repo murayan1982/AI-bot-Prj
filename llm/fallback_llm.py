@@ -1,6 +1,6 @@
 from typing import Generator, Tuple, List
 from llm.base import BaseLLM
-from config.settings import DEBUG, DEBUG_FALLBACK
+from config.defaults import DEBUG, DEBUG_FALLBACK
 
 class FallbackLLM(BaseLLM):
     def __init__(self, primary: BaseLLM, fallback: BaseLLM):

@@ -3,7 +3,7 @@ import re
 from typing import Generator, Tuple, List
 from llm.base import BaseLLM
 from config.calibration import MAX_TOKENS_NORMAL, LLM_TEMPERATURE
-from config.settings import GOOGLE_API_KEY
+from config.secrets import GOOGLE_API_KEY
 
 class GeminiEngine(BaseLLM):
     def __init__(self, system_instruction: str, model: str):
