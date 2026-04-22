@@ -27,25 +27,28 @@ class VoiceEngine:
         self.worker_thread = threading.Thread(target=self._queue_worker, daemon=True)
         self.worker_thread.start()
 
-    def speak(self, partial_text: str):
-        self.text_buffer += partial_text
-        
-        # Buffer logic: Send to queue if punctuation exists and length > 25, or if newline occurs
-        if re.search(r'([。！？\n])', self.text_buffer):
-            if len(self.text_buffer) > 25 or "\n" in self.text_buffer:
-                sentences = re.split(r'([。！？\n])', self.text_buffer)
-                # Combine sentence with its punctuation
-                for i in range(0, len(sentences)-1, 2):
-                    full_sent = sentences[i] + sentences[i+1]
-                    if full_sent.strip():
-                        self.msg_queue.put(full_sent.strip())
-                self.text_buffer = sentences[-1]
+    def speak(self, text: str) -> None:
+        if not text:
+            return
 
-    def flush(self):
-        """Force send remaining buffer to the queue"""
-        if self.text_buffer.strip():
-            self.msg_queue.put(self.text_buffer.strip())
-            self.text_buffer = ""
+        self.text_buffer += text
+
+        while True:
+            segment = self._extract_speakable_segment(force=False)
+            if not segment:
+                break
+            self._enqueue_segment(segment)
+
+    def flush(self) -> None:
+        while True:
+            segment = self._extract_speakable_segment(force=False)
+            if not segment:
+                break
+            self._enqueue_segment(segment)
+
+        tail = self._extract_speakable_segment(force=True)
+        if tail:
+            self._enqueue_segment(tail)
 
     @property
     def is_speaking_active(self):
@@ -99,3 +102,60 @@ class VoiceEngine:
             finally:
                 self.is_speaking = False
                 self.msg_queue.task_done()
+
+    def _extract_speakable_segment(self, force: bool = False) -> str:
+        """
+        Return one speakable segment from the pending text buffer.
+
+        Rules:
+        - prefer splitting on strong punctuation
+        - allow weak punctuation splits only after some minimum length
+        - when force=True, flush the entire remaining buffer
+        """
+        text = self.text_buffer.strip()
+        if not text:
+            self.text_buffer = ""
+            return ""
+
+        if force:
+            self.text_buffer = ""
+            return text
+
+        strong_breaks = "。！？.!?\n"
+        weak_breaks = "、,;:"
+
+        min_len_for_weak_break = 18
+        min_len_without_break = 40
+
+        for i, ch in enumerate(text):
+            if ch in strong_breaks:
+                segment = text[: i + 1].strip()
+                rest = text[i + 1 :].lstrip()
+                self.text_buffer = rest
+                return segment
+
+        for i, ch in enumerate(text):
+            if ch in weak_breaks and i + 1 >= min_len_for_weak_break:
+                segment = text[: i + 1].strip()
+                rest = text[i + 1 :].lstrip()
+                self.text_buffer = rest
+                return segment
+
+        if len(text) >= min_len_without_break:
+            split_at = text.rfind(" ", 0, min_len_without_break)
+            if split_at <= 0:
+                split_at = min_len_without_break
+
+            segment = text[:split_at].strip()
+            rest = text[split_at:].lstrip()
+            self.text_buffer = rest
+            return segment
+
+        return ""
+
+    def _enqueue_segment(self, text: str) -> None:
+        """Queue one normalized text segment for TTS playback."""
+        cleaned = (text or "").strip()
+        if not cleaned:
+            return
+        self.msg_queue.put(cleaned)
