@@ -174,6 +174,16 @@ Optional voice configuration:
 VOICE_MASTER=[{"id":"your_voice_id_here","name":"MyVoice"}]
 ```
 
+## First Run Recommendation
+
+For the first run, start with the safest setup:
+
+1. Set `APP_PRESET=text_chat`
+2. Add the required API key to `.env`
+3. Run `python main.py`
+4. Confirm the basic text conversation flow works
+5. Then move to `text_vts` or `voice_vts` if needed
+
 ---
 
 ## Runtime Configuration
