@@ -1,12 +1,9 @@
 import asyncio
-import re
 from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine
 from core.events import emit
-from core.emotion import parse_emotion_response
+from core.streaming import StreamingState, consume_stream_chunk
 import traceback
-
-ANSI_CLEANER = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]")
 
 
 async def ainput(prompt: str = "") -> str:
@@ -51,8 +48,7 @@ async def process_ai_response(
         print("\n  AI: ", end="", flush=True)
 
         full_log_text = ""
-        pending_prefix = ""
-        emotion_parsed = False
+        stream_state = StreamingState()
         emotion_triggered = False
 
         for clean_chunk, emotions in llm.ask_stream(user_input):
@@ -63,8 +59,6 @@ async def process_ai_response(
             if not clean_chunk and not emotions:
                 continue
 
-            # Runtime event: on_emotion_detected
-            # Prefer the first emitted emotion from the LLM stream if available.
             if emotions and not emotion_triggered:
                 try:
                     emotion = str(emotions[0]).strip().lower()
@@ -73,47 +67,34 @@ async def process_ai_response(
                     print(f"[Emotion Plugin Error] {e}")
                 emotion_triggered = True
 
-            chunk_text = ANSI_CLEANER.sub("", clean_chunk or "")
+            chunk_result = consume_stream_chunk(stream_state, clean_chunk)
 
-            if not emotion_parsed:
-                pending_prefix += chunk_text
-                parsed = parse_emotion_response(pending_prefix)
+            if (
+                chunk_result.parsed_emotion is not None
+                and not emotion_triggered
+            ):
+                try:
+                    await emit(runtime, "on_emotion_detected", chunk_result.parsed_emotion)
+                except Exception as e:
+                    print(f"[Emotion Plugin Error] {e}")
+                emotion_triggered = True
 
-                if parsed.clean_text == "" and "[emotion:" in pending_prefix:
-                    continue
-
-                display_text = parsed.clean_text
-                emotion_parsed = True
-                pending_prefix = ""
-
-                # Runtime event: on_emotion_detected
-                # Fallback path when emotion is resolved from parsed text instead
-                # of an explicit streamed emotion list.
-                if not emotion_triggered:
-                    try:
-                        await emit(runtime, "on_emotion_detected", parsed.emotion)
-                    except Exception as e:
-                        print(f"[Emotion Plugin Error] {e}")
-                    emotion_triggered = True
-            else:
-                display_text = chunk_text
+            display_text = chunk_result.display_text
+            speech_text = chunk_result.speech_text
 
             if display_text:
                 print(display_text, end="", flush=True)
                 full_log_text += display_text
-
-                # Runtime event: on_llm_chunk
                 await emit(runtime, "on_llm_chunk", display_text)
 
-                if use_tts and tts is not None:
-                    tts.speak(display_text)
+            if speech_text and use_tts and tts is not None:
+                tts.speak(speech_text)
 
         print()
 
         if use_tts and tts is not None:
             await wait_for_tts_playback(tts)
 
-        # Runtime event: on_llm_complete
         await emit(runtime, "on_llm_complete", full_log_text)
         return full_log_text
 
