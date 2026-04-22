@@ -79,7 +79,7 @@ class VTSClient:
                 authenticated = await self._try_authenticate_with_current_token()
 
             if not authenticated:
-                print("[VTS Error] Authentication failed.")
+                print("Authentication failed. Continuing without Live2D control.")
                 self.is_connected = False
                 return False
 
@@ -90,7 +90,7 @@ class VTSClient:
 
         except Exception as e:
             self.is_connected = False
-            print(f"[VTS Error] Connection failed: {e}")
+            print(f"[VTS Warning] Live2D connection failed. Continuing without Live2D control. ({e})")
             return False
 
     async def _try_authenticate_with_current_token(self) -> bool:
@@ -120,7 +120,7 @@ class VTSClient:
 
             token = response.get("data", {}).get("authenticationToken")
             if not token:
-                print("[VTS Error] No authenticationToken in response.")
+                print(f"[VTS Warning] Authentication failed. Continuing without Live2D control.")
                 return False
 
             self.vts.authentic_token = token
@@ -129,7 +129,7 @@ class VTSClient:
             return True
 
         except Exception as e:
-            print(f"[VTS Error] Token request failed: {e}")
+            print(f"[VTS Warning] Authentication token request failed. Continuing without Live2D control. ({e})")
             return False
 
     def _extract_authenticated(self, response) -> bool:
@@ -176,7 +176,7 @@ class VTSClient:
                 self._debug(f"[VTS] Hotkey names: {sorted(self.hotkey_cache.keys())}")
 
         except Exception as e:
-            print(f"[VTS Error] Hotkey cache failed: {e}")
+            print(f"[VTS Warning] Hotkey cache update failed. Expression control may be limited.")
 
     async def trigger_hotkey(self, hotkey_name: str) -> bool:
         """
@@ -278,4 +278,4 @@ class VTSClient:
             await self.vts.close()
             self.vts = None
         except Exception as e:
-            print(f"[VTS Error] Close failed: {e}")
+            print(f"[VTS Warning] Close failed.")

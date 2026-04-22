@@ -98,7 +98,7 @@ class VoiceEngine:
                 if file_path.exists():
                     file_path.unlink()
             except Exception as e:
-                print(f"\n[TTS Error]: {str(e)}")
+                print(f"\n[TTS Warning] Playback failed. Continuing without this audio chunk. ({e})")
             finally:
                 self.is_speaking = False
                 self.msg_queue.task_done()
