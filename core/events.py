@@ -1,18 +1,48 @@
-from collections.abc import Callable
+from __future__ import annotations
+
 import inspect
-import asyncio
+from typing import Any, Callable
+
+EventHandler = Callable[..., Any]
+
+EVENT_USER_INPUT = "on_user_input"
+EVENT_LLM_CHUNK = "on_llm_chunk"
+EVENT_LLM_COMPLETE = "on_llm_complete"
+EVENT_EMOTION_DETECTED = "on_emotion_detected"
+EVENT_ERROR = "on_error"
+
+SUPPORTED_EVENTS = (
+    EVENT_USER_INPUT,
+    EVENT_LLM_CHUNK,
+    EVENT_LLM_COMPLETE,
+    EVENT_EMOTION_DETECTED,
+    EVENT_ERROR,
+)
 
 
-async def emit_hooks(hooks: list[Callable], *args, **kwargs) -> None:
-    for hook in hooks:
-        try:
-            result = hook(*args, **kwargs)
-            if inspect.isawaitable(result):
-                await result
-        except Exception as e:
-            print(f"[Hook Error] {e}")
+def create_hook_registry() -> dict[str, list[EventHandler]]:
+    """
+    Create the default runtime hook registry.
+
+    This defines the supported plugin-facing runtime events for v1.8.
+    """
+    return {event_name: [] for event_name in SUPPORTED_EVENTS}
 
 
-async def emit(runtime: dict, event_name: str, *args, **kwargs) -> None:
-    hooks = runtime.get("hooks", {}).get(event_name, [])
-    await emit_hooks(hooks, *args, **kwargs)
+async def emit(runtime: dict[str, Any], event_name: str, *args, **kwargs) -> None:
+    """
+    Emit a runtime event to all registered handlers.
+
+    Event dispatch is best-effort:
+    - Unknown or unregistered events are ignored
+    - Handlers are called in registration order
+    - Async handlers are awaited
+    - Sync handlers are called directly
+    """
+    hooks = runtime.get("hooks", {})
+    handlers = hooks.get(event_name, [])
+
+    for handler in handlers:
+        result = handler(*args, **kwargs)
+        if inspect.isawaitable(result):
+            await result

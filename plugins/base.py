@@ -49,6 +49,7 @@ class BasePlugin(ABC):
     - "use_stt"
     - "use_tts"
     - "log_file"
+    - Supported hook names are defined in core.events
 
     Plugin design guidance:
     - Register hooks in setup(), not in on_start()

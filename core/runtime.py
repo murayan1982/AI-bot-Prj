@@ -9,7 +9,7 @@ from utils.security import SecurityManager
 from llm.builder import build_llm
 from plugins.manager import PluginManager
 from plugins.builtin import ConsoleLoggerPlugin
-
+from core.events import create_hook_registry
 
 LANGUAGE_NAMES = {
     "ja": "Japanese",
@@ -127,13 +127,7 @@ async def initialize_components(config) -> dict:
         "vts": vts,
         "stt": stt,
         "tts": tts,
-        "hooks": {
-            "on_user_input": [],
-            "on_llm_chunk": [],
-            "on_llm_complete": [],
-            "on_emotion_detected": [],
-            "on_error": [],
-        },
+        "hooks": create_hook_registry(),
     })
 
     plugin_manager = PluginManager()
