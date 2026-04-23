@@ -446,6 +446,40 @@ Typical responsibilities:
 
 ---
 
+## Sample Plugin
+
+A minimal sample plugin is available here:
+
+- `plugins/samples/simple_greeting.py`
+
+This sample is intended for plugin authors who want the smallest possible starting point.
+
+It shows the recommended basic pattern:
+
+- inherit from `BasePlugin`
+- register hooks in `setup()`
+- react to runtime events with a small handler
+
+### Example registration
+
+    from plugins.samples import SimpleGreetingPlugin
+
+    plugin_manager.register(SimpleGreetingPlugin())
+
+After registration, run the normal plugin lifecycle flow:
+
+    plugin_manager.setup_all(runtime)
+    plugin_manager.on_start(runtime)
+
+### Notes
+
+- sample plugins are provided as authoring examples
+- builtin plugins are part of the default framework setup
+- sample plugins are not enabled by default
+- hook registration should be done in `setup()`
+
+---
+
 ## Hooks (Extension Points)
 
 Current runtime hooks include:
