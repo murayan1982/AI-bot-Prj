@@ -43,10 +43,13 @@ text 系の streaming 表示を読みやすく自然な状態にする
 - Ctrl+C / exit / 通常終了時の見え方を軽く polish する
 - voice 実行時の不要ログや過剰なノイズを見直す
 - STT 待機 / TTS 再生 / 終了のつながりを自然にする
+- voice_vts 時のみ有効化できる text fallback の導線を整理する
+- text fallback はフラグで ON / OFF 切替可能な形に留める
 - 音声系は大改修せず、UX に効く範囲だけ触る
 
 Goal:
-voice_vts 実行時の体験を荒さの少ない状態にする
+voice_vts 実行時の体験を荒さの少ない状態にし、
+必要に応じて text fallback も使える状態にする
 
 ---
 
@@ -82,6 +85,7 @@ character customization の入口が分かりやすい状態にする
 - preset / character の導線を README で整理する
 - first run の案内をより分かりやすくする
 - よく触る設定ファイルと変更ポイントを整理する
+- voice_vts の text fallback 設定を必要最小限で説明する
 - v1.9 時点の使い方が README / docs から自然に伝わるようにする
 
 Goal:
@@ -106,6 +110,8 @@ v1.9 の体験改善が一貫した状態でリリースできるようにする
 
 - v1.9 の主軸は Streaming UX と Character / Preset UX とする
 - 音声系は UX に直結する最小限の polish のみに留める
+- voice_vts では必要に応じて text fallback を使える余地を持たせる
+- text fallback はフラグで有効化する補助機能として扱い、標準挙動はシンプルに保つ
 - STT / TTS の基盤再設計や provider abstraction の大整理は v2.0 以降とする
 - latency 改善や音声パイプライン再設計は v2.0 以降の課題として残す
 - text_chat を safe default とする方針は維持する
@@ -117,6 +123,7 @@ v1.9 の体験改善が一貫した状態でリリースできるようにする
 
 - streaming 表示が自然で読みやすい
 - voice 実行時の終了体験とログ表示が荒れにくい
+- voice_vts で必要に応じて text fallback を使える
 - preset の役割と選び方が分かりやすい
 - character customization の入口が見つけやすい
 - README / docs から使い方と変更点を追いやすい
