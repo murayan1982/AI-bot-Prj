@@ -80,20 +80,21 @@ Framework 構成へ整理された状態にする
 
 ---
 
-[v1.7] UX & Streaming
+[v1.7] Streaming Foundation
 
-- LLM逐次応答の表示体験改善
-- TTS逐次再生の整理
-- 音声会話の体感レスポンス改善
-- エラーメッセージ / fallback UX 改善
-- 初回セットアップ導線改善
+- LLM逐次応答の表示基盤を整理する
+- chunk表示と本文表示の責務を整理する
+- emotion tag を含む逐次出力の扱いを整理する
+- text系 preset の streaming 表示基盤を整える
+- voice系で流用しやすい出力経路を整理する
 
 Goal:
-「速くて使いやすい」と感じる体験に近づける
+streaming 表示を扱うための基盤が明確で、
+text / voice 両方へ発展しやすい状態にする
 
 ---
 
-[v1.8] Plugin Expansion
+[v1.8] Plugin & Runtime Extensibility
 
 - plugin APIの安定化
 - plugin manager の拡張
@@ -101,38 +102,61 @@ Goal:
   - console logger 強化
   - simple memory
   - external API sample
-- pluginのサンプル充実
-- ドキュメント整備（plugin作成方法）
+- plugin sample の整理
+- plugin / hook contract documentation の補強
+- runtime との接続点を整理する
 
 Goal:
-「拡張できるフレームワーク」として成立する
+「拡張できる runtime / plugin framework」として成立する
 
 ---
 
-[v1.9] Stabilization
+[v1.9] Streaming UX & Developer Guidance Polish
 
-- 軽いテスト整備
-- preset / plugin の動作確認
-- 互換性チェック
-- 不要ログ削減
-- エッジケース修正
-- サンプルプロジェクト追加
+- streaming 表示体験の改善
+- `voice_vts` の text fallback と shutdown flow の整理
+- STT待機 / TTS再生 / 終了体験の軽い polish
+- preset の役割と first run 導線の整理
+- character customization 入口の整理
+- README / docs / distribution wording の更新
+- repository naming の整理
+- cleanup / consistency pass
 
 Goal:
-安定して配布できる状態にする
+起動してから使い方が分かり、
+text / voice / preset / character の導線が自然に伝わる状態にする
 
 ---
 
-[v2.0] Framework Release
+[v1.10] Character Structure & Developer Flow Cleanup
 
-- ドキュメント全面整備
-- Quick Start 完成
-- サンプル構成の洗練
-- 初心者でも使える導線確立
-- リポジトリ構成の最終整理
+- character loader の責務を整理する
+- `profile / system / vts_hotkeys` の役割をより明確化する
+- character 追加 / 差し替えの流れを整理する
+- character naming / file naming の整合性を確認する
+- 1 character = 1 directory 運用を前提に読みやすさを高める
+- character customization guide を補強する
+- developer flow の小さな cleanup を行う
 
 Goal:
-「フレームワークとして完成」と言える状態
+character 周りの構造と編集導線がより分かりやすく、
+開発者が差し替え / 追加しやすい状態にする
+
+---
+
+[v2.0] Minimum Conversation UX & Audio Pipeline Foundation
+
+- 音声入出力フェーズの責務を整理する
+- STT / LLM / TTS の接続を見直しやすい構造へ寄せる
+- 最低限の会話デザイン方針を導入する
+- 音声会話の自然な待機 / 応答 / 発話フローの足場を整える
+- 将来の latency 改善や provider abstraction に繋がる構造を作る
+- 将来の multi-character / interruption / backchannel へ繋がる状態整理の入口を作る
+- Quick Start / docs を v2.0 方針に合わせて更新する
+
+Goal:
+「AIキャラクター会話の最低限のUX」と
+今後の音声基盤改善を進めるための土台が揃った状態にする
 
 ---
 
@@ -147,6 +171,9 @@ Goal:
 - settings.py は最終的に神ファイル化させない
 - provider/model registry は runtime config から分離する
 - legacy compatibility は main framework flow から分けて管理する
+- v1.x では開発者がすぐ試せる土台づくりを優先する
+- 会話デザインとしてのUX向上は v2.0 以降のテーマとして扱う
+- character は「誰として振る舞うか」、preset / runtime は「どう動くか」として整理する
 
 ---
 
