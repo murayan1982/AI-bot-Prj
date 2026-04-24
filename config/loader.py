@@ -10,6 +10,29 @@ from dotenv import load_dotenv
 
 SUPPORTED_LANGUAGE_CODES = {"ja", "en"}
 
+CHARACTER_PROFILE_FILE = "profile.json"
+CHARACTER_SYSTEM_FILE = "system.txt"
+CHARACTER_VTS_HOTKEYS_FILE = "vts_hotkeys.json"
+
+
+@dataclass
+class CharacterData:
+    """
+    Character-specific data loaded from characters/<character_name>/.
+
+    Character data describes who the AI character is:
+    - profile metadata
+    - system prompt / behavior instruction
+    - optional VTS hotkey mapping
+
+    Runtime mode selection such as voice, text, VTS enablement, and language
+    belongs to presets and RuntimeConfig, not character files.
+    """
+
+    profile: dict = field(default_factory=dict)
+    system_prompt: str = ""
+    vts_hotkeys: dict = field(default_factory=dict)
+
 
 @dataclass
 class RuntimeConfig:
@@ -58,16 +81,30 @@ def load_preset_file(preset_name: str) -> dict:
 
 
 def load_json_file(path: Path) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    """
+    Load a JSON file as a dictionary.
+    """
+
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if not isinstance(data, dict):
+        print(f"[Config] JSON file must contain an object: {path}")
+        return {}
+
+    return data
 
 
 def load_text_file(path: Path) -> str:
-    with open(path, "r", encoding="utf-8") as f:
+    """
+    Load a UTF-8 text file and trim surrounding whitespace.
+    """
+
+    with path.open("r", encoding="utf-8") as f:
         return f.read().strip()
 
 
-def load_character_data(character_name: str) -> tuple[dict, str, dict]:
+def load_character_data(character_name: str) -> CharacterData:
     """
     Load character-specific differences.
 
@@ -77,12 +114,14 @@ def load_character_data(character_name: str) -> tuple[dict, str, dict]:
     - VTS hotkey mapping
 
     Character data is not responsible for general runtime mode selection.
+    Missing files fall back to empty values so minimal characters can be used
+    during development.
     """
 
     character_dir = Path("characters") / character_name
-    profile_path = character_dir / "profile.json"
-    system_path = character_dir / "system.txt"
-    vts_hotkeys_path = character_dir / "vts_hotkeys.json"
+    profile_path = character_dir / CHARACTER_PROFILE_FILE
+    system_path = character_dir / CHARACTER_SYSTEM_FILE
+    vts_hotkeys_path = character_dir / CHARACTER_VTS_HOTKEYS_FILE
 
     profile = {}
     system_prompt = ""
@@ -90,20 +129,28 @@ def load_character_data(character_name: str) -> tuple[dict, str, dict]:
 
     if profile_path.exists():
         profile = load_json_file(profile_path)
+    else:
+        print(f"[Config] Character profile not found: {profile_path}")
 
     if system_path.exists():
         system_prompt = load_text_file(system_path)
+    else:
+        print(f"[Config] Character system prompt not found: {system_path}")
 
     if vts_hotkeys_path.exists():
         try:
-            data = load_json_file(vts_hotkeys_path)
-            if isinstance(data, dict):
-                vts_hotkeys = data
+            vts_hotkeys = load_json_file(vts_hotkeys_path)
         except Exception as e:
             print(f"[Config] Failed to load VTS hotkeys: {e}")
             vts_hotkeys = {}
+    else:
+        print(f"[Config] Character VTS hotkeys not found: {vts_hotkeys_path}")
 
-    return profile, system_prompt, vts_hotkeys
+    return CharacterData(
+        profile=profile,
+        system_prompt=system_prompt,
+        vts_hotkeys=vts_hotkeys,
+    )
 
 
 def normalize_language_code(code: str, default: str = "en") -> str:
@@ -167,7 +214,7 @@ def load_runtime_config() -> RuntimeConfig:
     vts_emotion_enabled = bool(preset_data.get("vts_emotion_enabled", False))
 
     # 3) Load character-specific data.
-    profile, system_prompt, vts_hotkeys = load_character_data(character_name)
+    character_data = load_character_data(character_name)
 
     # 4) Assemble RuntimeConfig as the runtime source of truth.
     return RuntimeConfig(
@@ -182,9 +229,9 @@ def load_runtime_config() -> RuntimeConfig:
         emotion_enabled=emotion_enabled,
         vts_emotion_enabled=vts_emotion_enabled,
         character_name=character_name,
-        character_profile=profile,
-        system_prompt=system_prompt,
-        vts_hotkeys=vts_hotkeys,
+        character_profile=character_data.profile,
+        system_prompt=character_data.system_prompt,
+        vts_hotkeys=character_data.vts_hotkeys,
     )
 
 
