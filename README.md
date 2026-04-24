@@ -207,7 +207,7 @@ config/
 registry/
   llm.py
   tts.py
-    
+
 characters/
   default/
     profile.json
@@ -233,54 +233,91 @@ main.py
 Character-related files define who the character is.
 Preset and runtime settings define how the application runs.
 
-A character is managed as one directory under characters/.
+A character is managed as one directory under `characters/`.
 
+```text
 characters/
-default/
-profile.json
-system.txt
-vts_hotkeys.json
+  default/
+    profile.json
+    system.txt
+    vts_hotkeys.json
+```
 
 Each character directory can contain the same three files.
 
 ---
 
 ### Character files
-- profile.json
+
+- `profile.json`
   - Basic character metadata such as name and description
   - Useful for identifying the character
   - This is not the main behavior prompt
-- system.txt
- - The main system prompt that defines how the character speaks and behaves
- - Edit this first when you want to change personality, tone, or response style
-- vts_hotkeys.json
- - Emotion / Live2D hotkey mappings used for VTS expression control
- - Only needed when using VTube Studio expression control
+
+- `system.txt`
+  - The main system prompt that defines how the character speaks and behaves
+  - Edit this first when you want to change personality, tone, or response style
+
+- `vts_hotkeys.json`
+  - Emotion / Live2D hotkey mappings used for VTS expression control
+  - Only needed when using VTube Studio expression control
 
 ---
 
 ### Editing guide
 
 - If you want to change the character's identity:
-
- - edit characters/<character_name>/profile.json
+  - edit `characters/<character_name>/profile.json`
 
 - If you want to change the character's tone, style, or behavior:
-
- - edit characters/<character_name>/system.txt
+  - edit `characters/<character_name>/system.txt`
 
 - If you want to change facial-expression or emotion mappings:
-
- - edit characters/<character_name>/vts_hotkeys.json
+  - edit `characters/<character_name>/vts_hotkeys.json`
 
 - If you want to switch which character is used:
-
- - edit character_name in presets/*.json
+  - edit `character_name` in `presets/*.json`
 
 - If you want to change input/output mode or runtime behavior:
+  - edit `APP_PRESET` in `.env`
+  - edit `presets/*.json`
 
- - edit APP_PRESET in .env
- - edit presets/*.json
+---
+
+### Adding a new character
+
+The simplest way to add a new character is to copy the default character directory.
+
+1. Copy `characters/default/`
+2. Rename the copied directory, for example `characters/my_character/`
+3. Edit `profile.json`
+4. Edit `system.txt`
+5. Edit `vts_hotkeys.json` if you use VTube Studio expression control
+6. Set `character_name` in `presets/*.json` to the new directory name
+
+Example:
+
+```text
+characters/
+  default/
+    profile.json
+    system.txt
+    vts_hotkeys.json
+  my_character/
+    profile.json
+    system.txt
+    vts_hotkeys.json
+```
+
+Then update a preset:
+
+```json
+{
+  "character_name": "my_character"
+}
+```
+
+The directory name under `characters/` and the `character_name` value in the preset should match.
 
 ---
 
@@ -293,11 +330,11 @@ A simple rule:
 
 Examples:
 
-- Change speaking style -> character (system.txt)
-- Change displayed name / description -> character (profile.json)
-- Change emotion-to-VTS mapping -> character (vts_hotkeys.json)
-- Change selected character -> preset (character_name)
-- Change text/voice mode -> preset (presets/*.json)
+- Change speaking style -> character (`system.txt`)
+- Change displayed name / description -> character (`profile.json`)
+- Change emotion-to-VTS mapping -> character (`vts_hotkeys.json`)
+- Change selected character -> preset (`character_name`)
+- Change text/voice mode -> preset (`presets/*.json`)
 
 ---
 
