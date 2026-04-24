@@ -16,6 +16,12 @@ async def get_user_input(
     *,
     allow_text_fallback_during_stt: bool = False,
 ) -> str:
+    """Collect one user input turn from keyboard or STT.
+
+    This function represents the user-facing waiting/listening part of the
+    conversation flow. It intentionally returns plain text so the session loop
+    can stay independent from the input provider.
+    """
     if not use_stt or stt is None:
         return (await ainput("\nUser: ")).strip()
 
@@ -35,6 +41,7 @@ async def get_user_input(
 
 
 async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) -> None:
+    """Wait for queued TTS playback without blocking the session forever."""
     try:
         tts_engine.flush()
 
@@ -61,6 +68,14 @@ async def process_ai_response(
     tts,
     use_tts: bool,
 ) -> str:
+    """Process one assistant turn from LLM stream to display, TTS, and events.
+
+    Minimum v2.0 flow:
+    user input -> LLM stream -> clean display text -> optional TTS ->
+    emotion event -> optional VTS hotkey via plugin.
+
+    The function returns the visible assistant text for logging.
+    """
     try:
         answer_prefix = "  AI: "
 
@@ -72,6 +87,7 @@ async def process_ai_response(
         first_visible_chunk_received = False
         first_speech_sent = False
 
+        # thinking: consume the LLM stream one chunk at a time.
         for clean_chunk, emotions in llm.ask_stream(user_input):
 
             if emotions:
@@ -80,6 +96,7 @@ async def process_ai_response(
             if not clean_chunk and not emotions:
                 continue
 
+            # emotion/VTS: notify plugins once when an emotion is detected.
             if emotions and not emotion_triggered:
                 try:
                     emotion = str(emotions[0]).strip().lower()
@@ -103,6 +120,7 @@ async def process_ai_response(
             display_text = chunk_result.display_text
             speech_text = chunk_result.speech_text
 
+            # display: show only clean text, not leading emotion tags.
             if display_text:
                 if not first_visible_chunk_received:
                     print(answer_prefix, end="", flush=True)
@@ -112,6 +130,7 @@ async def process_ai_response(
                 full_log_text += display_text
                 await emit(runtime, "on_llm_chunk", display_text)
 
+            # speaking: send the same clean text to TTS when enabled.
             if speech_text and use_tts and tts is not None:
                 if not first_speech_sent:
                     first_speech_sent = True

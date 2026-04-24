@@ -7,10 +7,19 @@ from core.events import emit
 
 
 class ChatSession:
+    """Run the top-level conversation loop for one runtime session.
+
+    The session owns the repeated user-input cycle:
+    user input -> runtime events -> AI response processing -> logging.
+    Lower-level response handling such as streaming display, TTS, emotion
+    parsing, and VTS expression triggers stays in core.pipeline and plugins.
+    """
+
     def __init__(self, runtime: dict):
         self.runtime = runtime
 
     async def run(self):
+        """Start the interactive conversation loop until exit or interruption."""
         use_stt = self.runtime["use_stt"]
         use_tts = self.runtime["use_tts"]
         log_file = self.runtime["log_file"]
@@ -25,6 +34,7 @@ class ChatSession:
 
         while True:
             try:
+                # waiting / listening: collect keyboard or STT input for one turn.
                 user_input = await get_user_input(
                     use_stt,
                     stt,
@@ -43,6 +53,7 @@ class ChatSession:
 
                 start_ts = datetime.datetime.now().strftime("%H:%M:%S")
 
+                # thinking / speaking: stream the LLM response and optional voice/VTS side effects.
                 full_log_text = await process_ai_response(
                     runtime=self.runtime,
                     llm=llm,
