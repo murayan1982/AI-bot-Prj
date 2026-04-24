@@ -32,6 +32,7 @@ class RuntimeConfig:
     output_voice_enabled: bool = False
     vts_enabled: bool = False
     tts_provider: str = "none"
+    allow_text_fallback_during_stt: bool = False
 
     emotion_enabled: bool = False
     vts_emotion_enabled: bool = False
@@ -159,6 +160,9 @@ def load_runtime_config() -> RuntimeConfig:
     output_voice_enabled = preset_data.get("output_voice_enabled", False)
     vts_enabled = preset_data.get("vts_enabled", False)
     tts_provider = preset_data.get("tts_provider", "none")
+    allow_text_fallback_during_stt = bool(
+        preset_data.get("allow_text_fallback_during_stt", False)
+    )
     emotion_enabled = bool(preset_data.get("emotion_enabled", False))
     vts_emotion_enabled = bool(preset_data.get("vts_emotion_enabled", False))
 
@@ -174,6 +178,7 @@ def load_runtime_config() -> RuntimeConfig:
         output_voice_enabled=output_voice_enabled,
         vts_enabled=vts_enabled,
         tts_provider=tts_provider,
+        allow_text_fallback_during_stt=allow_text_fallback_during_stt,
         emotion_enabled=emotion_enabled,
         vts_emotion_enabled=vts_emotion_enabled,
         character_name=character_name,

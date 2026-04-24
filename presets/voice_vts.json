@@ -6,6 +6,7 @@
   "output_voice_enabled": true,
   "vts_enabled": true,
   "tts_provider": "local",
+  "allow_text_fallback_during_stt": true,
   "character_name": "default",
   "emotion_enabled": true,
   "vts_emotion_enabled": true

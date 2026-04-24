@@ -15,7 +15,6 @@ class STTEngine:
         with self.microphone as source:
             self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
 
-            print("\r[STT Waiting...] ", end="", flush=True)
             try:
                 audio = await asyncio.to_thread(
                     self.recognizer.listen,
@@ -38,7 +37,6 @@ class STTEngine:
                     return text
 
             except asyncio.TimeoutError:
-                print("\r[STT] Recognition timed out.       ", end="", flush=True)
                 return ""
             except (sr.WaitTimeoutError, sr.UnknownValueError):
                 return ""

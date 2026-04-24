@@ -10,13 +10,28 @@ async def ainput(prompt: str = "") -> str:
     return await asyncio.to_thread(input, prompt)
 
 
-async def get_user_input(use_stt: bool, stt: STTEngine | None) -> str:
+async def get_user_input(
+    use_stt: bool,
+    stt: STTEngine | None,
+    *,
+    allow_text_fallback_during_stt: bool = False,
+) -> str:
     if not use_stt or stt is None:
         return (await ainput("\nUser: ")).strip()
 
     print("[STT Waiting...]")
     result = await stt.listen()
-    return str(result).strip() if result else ""
+    voice_text = str(result).strip() if result else ""
+    if voice_text:
+        return voice_text
+
+    if allow_text_fallback_during_stt:
+        fallback = await ainput(
+            "User (Text fallback / Enter=retry / 'exit'=quit): "
+        )
+        return fallback.strip()
+
+    return ""
 
 
 async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) -> None:

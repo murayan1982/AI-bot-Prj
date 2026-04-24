@@ -18,10 +18,18 @@ class ChatSession:
         vts = self.runtime["vts"]
         stt = self.runtime["stt"]
         tts = self.runtime["tts"]
+        config = self.runtime.get("config")
+        allow_text_fallback_during_stt = bool(
+            getattr(config, "allow_text_fallback_during_stt", False)
+        )
 
         while True:
             try:
-                user_input = await get_user_input(use_stt, stt)
+                user_input = await get_user_input(
+                    use_stt,
+                    stt,
+                    allow_text_fallback_during_stt=allow_text_fallback_during_stt,
+                )
 
                 if not user_input:
                     continue
