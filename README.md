@@ -404,6 +404,12 @@ Runtime behavior is controlled mainly by:
 - `presets/*.json`
 - character files under `characters/*`
 
+Character files and runtime settings have different responsibilities.
+
+- `characters/*` defines who the character is
+- `APP_PRESET` and `presets/*.json` define how the framework runs
+- `RuntimeConfig` is assembled from both and becomes the runtime source of truth
+
 Example:
 
 ```env
