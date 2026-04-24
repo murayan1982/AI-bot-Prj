@@ -9,6 +9,9 @@ v1.9 では音声系を主テーマにはせず、
 終了体験・再生待機・ログ表示など、
 UX に直結する最小限の polish のみに留める。
 
+また、v1.9 リリースに合わせて repository naming と
+README / distribution page wording の整合性も整理する。
+
 ---
 
 [Day1] Streaming UX Review
@@ -86,10 +89,14 @@ character customization の入口が分かりやすい状態にする
 - first run の案内をより分かりやすくする
 - よく触る設定ファイルと変更ポイントを整理する
 - voice_vts の text fallback 設定を必要最小限で説明する
+- repository naming に合わせて README タイトルと正式名称表記を整理する
+- repo rename に伴う GitHub URL / clone 導線を更新する
+- BOOTH / Gumroad の案内文を v1.9 時点の表現に合わせて更新する
 - v1.9 時点の使い方が README / docs から自然に伝わるようにする
 
 Goal:
-README / docs を見れば起動・変更・確認の流れが分かる状態にする
+README / docs を見れば起動・変更・確認の流れが分かる状態にし、
+repository naming と distribution page wording も一貫した状態にする
 
 ---
 
@@ -99,6 +106,7 @@ README / docs を見れば起動・変更・確認の流れが分かる状態に
 - streaming / preset / character / docs / README の整合性を確認する
 - text_chat / text_vts / voice_vts の軽い確認を行う
 - 一時確認コードや不要ログが残っていないか確認する
+- repo rename / links / README / product wording の最終整合性を確認する
 - v1.9.0 リリース前提の最終整理を行う
 
 Goal:
@@ -112,6 +120,8 @@ v1.9 の体験改善が一貫した状態でリリースできるようにする
 - 音声系は UX に直結する最小限の polish のみに留める
 - voice_vts では必要に応じて text fallback を使える余地を持たせる
 - text fallback はフラグで有効化する補助機能として扱い、標準挙動はシンプルに保つ
+- v1.9 リリースに合わせて repository name / README / distribution page wording の整合性を整理する
+- GitHub repository name は ai-character-framework とし、正式名称は AI Character Conversation Framework を基準に整理する
 - STT / TTS の基盤再設計や provider abstraction の大整理は v2.0 以降とする
 - latency 改善や音声パイプライン再設計は v2.0 以降の課題として残す
 - text_chat を safe default とする方針は維持する
@@ -127,4 +137,5 @@ v1.9 の体験改善が一貫した状態でリリースできるようにする
 - preset の役割と選び方が分かりやすい
 - character customization の入口が見つけやすい
 - README / docs から使い方と変更点を追いやすい
+- repository naming / README / BOOTH / Gumroad の表現が一貫している
 - v2.0 に向けて音声基盤の大課題を無理なく残せる

@@ -47,11 +47,9 @@ async def process_ai_response(
     use_tts: bool,
 ) -> str:
     try:
-        thinking_label = "  AI: ..."
         answer_prefix = "  AI: "
 
         print()
-        print(thinking_label, flush=True)
 
         full_log_text = ""
         stream_state = StreamingState()
@@ -76,6 +74,9 @@ async def process_ai_response(
                 emotion_triggered = True
 
             chunk_result = consume_stream_chunk(stream_state, clean_chunk)
+
+            if chunk_result.should_wait_for_more:
+                continue
 
             if chunk_result.parsed_emotion is not None and not emotion_triggered:
                 try:
