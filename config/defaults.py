@@ -5,7 +5,7 @@ This module owns local development defaults such as debug switches
 and default voice / TTS selection indices.
 """
 
-DEBUG_MASTER = True
+DEBUG_MASTER = False
 
 DEBUG = DEBUG_MASTER
 DEBUG_ROUTER = DEBUG_MASTER
