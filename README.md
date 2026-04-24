@@ -233,32 +233,54 @@ main.py
 Character-related files define who the character is.
 Preset and runtime settings define how the application runs.
 
+A character is managed as one directory under characters/.
+
+characters/
+default/
+profile.json
+system.txt
+vts_hotkeys.json
+
+Each character directory can contain the same three files.
+
 ---
 
 ### Character files
-
-- `profile.json`
-  - Basic character information such as name and description
-- `system.txt`
-  - The main system prompt that defines how the character speaks and behaves
-- `vts_hotkeys.json`
-  - Emotion / Live2D hotkey mappings used for VTS expression control
+- profile.json
+  - Basic character metadata such as name and description
+  - Useful for identifying the character
+  - This is not the main behavior prompt
+- system.txt
+ - The main system prompt that defines how the character speaks and behaves
+ - Edit this first when you want to change personality, tone, or response style
+- vts_hotkeys.json
+ - Emotion / Live2D hotkey mappings used for VTS expression control
+ - Only needed when using VTube Studio expression control
 
 ---
 
 ### Editing guide
 
-If you want to change the character's identity:
-- edit `characters/<name>/profile.json`
+- If you want to change the character's identity:
 
-If you want to change the character's tone, style, or behavior:
-- edit `characters/<name>/system.txt`
+ - edit characters/<character_name>/profile.json
 
-If you want to change facial-expression or emotion mappings:
-- edit `characters/<name>/vts_hotkeys.json`
+- If you want to change the character's tone, style, or behavior:
 
-If you want to change input/output mode or runtime behavior:
-- edit `presets/*.json`
+ - edit characters/<character_name>/system.txt
+
+- If you want to change facial-expression or emotion mappings:
+
+ - edit characters/<character_name>/vts_hotkeys.json
+
+- If you want to switch which character is used:
+
+ - edit character_name in presets/*.json
+
+- If you want to change input/output mode or runtime behavior:
+
+ - edit APP_PRESET in .env
+ - edit presets/*.json
 
 ---
 
@@ -271,10 +293,11 @@ A simple rule:
 
 Examples:
 
-- Change speaking style -> character (`system.txt`)
-- Change displayed name / description -> character (`profile.json`)
-- Change emotion-to-VTS mapping -> character (`vts_hotkeys.json`)
-- Change text/voice mode -> preset (`presets/*.json`)
+- Change speaking style -> character (system.txt)
+- Change displayed name / description -> character (profile.json)
+- Change emotion-to-VTS mapping -> character (vts_hotkeys.json)
+- Change selected character -> preset (character_name)
+- Change text/voice mode -> preset (presets/*.json)
 
 ---
 

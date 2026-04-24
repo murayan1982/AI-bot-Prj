@@ -198,6 +198,8 @@ def load_runtime_config() -> RuntimeConfig:
         default="en",
     )
 
+    # New presets should use "character_name".
+    # "character" is kept only as a legacy fallback for older preset files.
     character_name = preset_data.get(
         "character_name",
         preset_data.get("character", "default"),
