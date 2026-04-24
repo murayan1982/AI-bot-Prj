@@ -396,6 +396,43 @@ VOICE_MASTER=[{"id":"your_voice_id_here","name":"MyVoice"}]
 
 ---
 
+## Developer Flow
+
+For regular development, start from the smallest working setup and then add features step by step.
+
+Recommended flow:
+
+1. Start with `APP_PRESET=text_chat`
+2. Confirm the basic text conversation flow
+3. Customize the character under `characters/*`
+4. Switch presets when you want to test Live2D or voice features
+5. Edit registry files only when you want to change LLM or TTS definitions
+
+Use these files as the main entry points:
+
+- `.env`
+  - Selects the startup preset with `APP_PRESET`
+
+- `presets/*.json`
+  - Defines runtime mode such as text, voice, Live2D, language, and selected character
+
+- `characters/*`
+  - Defines character-specific identity, behavior, and VTS expression mapping
+
+- `registry/llm.py`
+  - Defines available LLM providers and routes
+
+- `registry/tts.py`
+  - Defines available TTS providers and models
+
+A simple rule:
+
+- Change who the assistant is -> edit `characters/*`
+- Change how the framework runs -> edit `.env` or `presets/*.json`
+- Change provider definitions -> edit `registry/*`
+
+---
+
 ## Runtime Configuration
 
 Runtime behavior is controlled mainly by:
