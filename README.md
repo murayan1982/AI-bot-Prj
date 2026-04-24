@@ -72,7 +72,7 @@ APP_PRESET=text_chat
 Recommended order:
 
 1. `text_chat` — confirm the basic text conversation flow
-2. `text_vts` — confirm Live2D / VTS integration without voice
+2. `text_vts` — confirm text input with Live2D / VTS integration without voice
 3. `voice_vts` — try the full voice + Live2D experience
 
 ---
@@ -94,14 +94,15 @@ Use this preset to confirm that the base framework is working.
 
 ### `text_vts`
 
-Preset for checking Live2D / VTS behavior without voice features.
+Preset for checking text-driven Live2D / VTS behavior without voice features.
 
 - Keyboard input
 - Text output
 - Live2D enabled
 - No voice input/output
+- Emotion / VTS expression control enabled
 
-Use this preset when you want to test character expression control before enabling voice.
+Use this preset when you want to test character expression control before enabling STT or TTS.
 
 ---
 
@@ -110,8 +111,11 @@ Use this preset when you want to test character expression control before enabli
 Full voice + Live2D preset.
 
 - Voice input (STT)
+- Text fallback during STT wait
+- Text display
 - Voice output (TTS)
 - Live2D enabled
+- Emotion / VTS expression control enabled
 
 This preset provides the richest experience, but it also has the most runtime dependencies.
 After confirming that `text_chat` or `text_vts` works correctly, move on to `voice_vts`.
@@ -128,6 +132,21 @@ Example preset for bilingual-style testing.
 - No voice input/output
 
 Use this preset when you want to test language separation, such as Japanese input with English-only responses.
+
+---
+
+## Preset Experience Matrix
+
+| Preset | Input | Output | Live2D | Emotion / VTS expression | Main purpose |
+| --- | --- | --- | --- | --- | --- |
+| `text_chat` | Keyboard | Text | Disabled | Disabled | Safest first-run and base LLM conversation check |
+| `text_vts` | Keyboard | Text | Enabled | Enabled | Check Live2D expression flow without voice input/output |
+| `voice_vts` | STT + text fallback | Text + TTS | Enabled | Enabled | Minimum full-stack voice + Live2D conversation check |
+| `bilingual_ja_en` | Keyboard Japanese | Text English | Disabled | Disabled | Check input/output language separation |
+
+These presets are representative user-facing conversation presets, not a complete test matrix for every possible STT / TTS / Live2D combination.
+For v2.0, the presets are intentionally kept small and easy to understand.
+Lower-level combinations such as STT-only or TTS-only can be added later as developer test presets if needed.
 
 ---
 
@@ -450,7 +469,7 @@ Recommended flow:
 1. Start with `APP_PRESET=text_chat`
 2. Confirm the basic text conversation flow
 3. Customize the character under `characters/*`
-4. Switch presets when you want to test Live2D or voice features
+4. Switch to `text_vts` for Live2D expression checks, then `voice_vts` for voice + Live2D checks
 5. Edit registry files only when you want to change LLM or TTS definitions
 
 Use these files as the main entry points:
@@ -585,7 +604,10 @@ Intentionally out of scope for v2.0:
 - large audio pipeline redesign
 - Web UI or settings screen
 
-These topics are better handled after the minimum conversation experience is stable and easy to explain.
+These topics are intentionally left for later versions after the minimum conversation experience is stable and easy to explain.
+Advanced voice runtime topics are tracked in `docs/roadmap_feature_v3.0.md`.
+
+For v2.0, `voice_vts` should be understood as a minimum full-stack confirmation preset, not as a final low-latency voice architecture.
 
 ---
 
