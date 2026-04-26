@@ -80,6 +80,7 @@ The audio conversation pipeline is easier to maintain and ready for future laten
 - Clarify STT provider boundaries
 - Clarify TTS provider boundaries
 - Revisit LLM provider / route / fallback responsibilities
+- Add OpenAI as a standard LLM provider
 - Keep provider registry separate from runtime behavior
 - Keep provider-specific configuration out of the core conversation loop where possible
 - Document how developers can switch or add providers
