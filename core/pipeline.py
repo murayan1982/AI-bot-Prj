@@ -16,17 +16,27 @@ async def get_user_input(
     *,
     allow_text_fallback_during_stt: bool = False,
 ) -> str:
-    """Collect one user input turn from keyboard or STT.
-
-    This function represents the user-facing waiting/listening part of the
-    conversation flow. It intentionally returns plain text so the session loop
-    can stay independent from the input provider.
     """
+    Collect one user input turn from the active input path.
+
+    Responsibility:
+    - Use keyboard input when STT is disabled or unavailable.
+    - Use voice input when STT is enabled and available.
+    - Optionally fall back to keyboard input after STT timeout/failure.
+    - Return the collected text to the session loop.
+
+    This helper does not own conversation state transitions.
+    Future state handling should be layered above or around this boundary.
+    """
+    # Keyboard input path.
     if not use_stt or stt is None:
         return (await ainput("\n[Waiting] User: ")).strip()
 
+    # Voice input path.
     print("[Listening] Waiting for voice input...")
     result = await stt.listen()
+
+    # Optional text fallback after STT failure or timeout.
     voice_text = str(result).strip() if result else ""
     if voice_text:
         return voice_text
