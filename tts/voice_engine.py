@@ -14,6 +14,19 @@ from config.calibration import (
 )
 
 class VoiceEngine:
+    """
+    ElevenLabs-backed queued TTS playback engine.
+
+    Public boundary used by the runtime pipeline:
+    - speak(text): append streaming text and enqueue speakable segments.
+    - flush(): enqueue any remaining buffered text at the end of a turn.
+    - is_speaking_active: report whether queued or active playback remains.
+    - stop_immediately(): stop current playback and clear queued segments.
+
+    This class currently owns provider-specific TTS generation and local audio
+    playback. Provider abstraction and interruption behavior are intentionally
+    handled as future runtime milestones.
+    """
     def __init__(self, language_code: str = "ja"):
         self.client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
         self.voice_id = VOICE_ID
@@ -28,6 +41,13 @@ class VoiceEngine:
         self.worker_thread.start()
 
     def speak(self, text: str) -> None:
+        """
+        Append streaming text and enqueue any complete speakable segments.
+
+        This method is called repeatedly while the LLM stream is being consumed.
+        It does not force the remaining buffer to be spoken; call flush() at the
+        end of the assistant turn for that.
+        """
         if not text:
             return
 
@@ -40,6 +60,12 @@ class VoiceEngine:
             self._enqueue_segment(segment)
 
     def flush(self) -> None:
+        """
+        Enqueue all remaining buffered text for playback.
+
+        The pipeline calls this after the LLM stream ends so the final partial
+        sentence is not left in the buffer.
+        """
         while True:
             segment = self._extract_speakable_segment(force=False)
             if not segment:
@@ -52,11 +78,17 @@ class VoiceEngine:
 
     @property
     def is_speaking_active(self):
-        """Returns True if processing audio or queue is not empty"""
+        """Return True while playback is active or queued audio remains."""
         return self.is_speaking or not self.msg_queue.empty()
 
     def stop_immediately(self):
-        """Kill the current playback process and clear the queue"""
+        """
+        Stop current playback and clear queued segments.
+
+        This is an interruption-facing boundary for future barge-in behavior.
+        v2.1 only keeps the boundary explicit; it does not implement full
+        interruption handling.
+        """
         if self.current_process:
             self.current_process.kill()
         while not self.msg_queue.empty():
@@ -86,7 +118,8 @@ class VoiceEngine:
                 )
                 with open(file_path, "wb") as f:
                     for chunk in audio:
-                        if chunk: f.write(chunk)
+                        if chunk:
+                            f.write(chunk)
 
                 # Play audio via ffplay
                 self.current_process = subprocess.Popen([
