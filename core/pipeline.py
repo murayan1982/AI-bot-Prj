@@ -123,6 +123,7 @@ def _queue_tts_chunk(
     tts.speak(speech_text)
     return True
 
+
 async def process_ai_response(
     *,
     runtime: dict,
