@@ -168,7 +168,13 @@ This keeps voice mode easier to exit and more practical during testing.
 It is useful for confirming voice input, LLM response, TTS output, emotion parsing, and Live2D expression control together.
 
 It is not intended to represent the final low-latency voice architecture.
-More advanced audio pipeline cleanup, provider abstraction, latency work, and interruption behavior are tracked as future runtime topics.
+As of v2.1, the voice pipeline has been clarified around runtime responsibilities:
+`core/session.py` owns the top-level conversation loop, while `core/pipeline.py`
+handles user input collection, AI response processing, streaming display,
+optional TTS enqueue, and TTS playback wait.
+
+Provider abstraction, conversation state, latency-oriented streaming voice,
+and interruption behavior remain future runtime topics.
 
 ---
 
@@ -605,7 +611,7 @@ Intentionally out of scope for v2.0:
 - Web UI or settings screen
 
 These topics are intentionally left for later versions after the minimum conversation experience is stable and easy to explain.
-Advanced voice runtime topics are tracked in `docs/roadmap_feature_v3.0.md`.
+Advanced voice runtime topics are tracked in `docs/roadmap_v3.0.md`.
 
 For v2.0, `voice_vts` should be understood as a minimum full-stack confirmation preset, not as a final low-latency voice architecture.
 
@@ -637,4 +643,4 @@ This project is intended to be shared and used as a framework, but redistributio
 
 After v2.0, advanced conversation runtime topics are tracked in:
 
-- `docs/roadmap_feature_v3.0.md`
+- `docs/roadmap_v3.0.md`
