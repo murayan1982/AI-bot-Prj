@@ -68,6 +68,60 @@ async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) 
     except Exception as e:
         print(f"[TTS Warning] playback wait failed. Continuing session. ({e})")
 
+async def _emit_emotion_once(
+    runtime: dict,
+    emotion: str | None,
+    *,
+    emotion_triggered: bool,
+) -> bool:
+    """Emit the first detected emotion once per assistant turn."""
+    if emotion_triggered or emotion is None:
+        return emotion_triggered
+
+    normalized_emotion = str(emotion).strip().lower()
+    if not normalized_emotion:
+        return emotion_triggered
+
+    try:
+        await emit(runtime, "on_emotion_detected", normalized_emotion)
+    except Exception as e:
+        print(f"[Emotion Plugin Error] {e}")
+
+    return True
+
+
+async def _print_and_emit_display_chunk(
+    runtime: dict,
+    display_text: str,
+    *,
+    answer_prefix: str,
+    first_visible_chunk_received: bool,
+) -> bool:
+    """Print one clean display chunk and emit the LLM chunk event."""
+    if not display_text:
+        return first_visible_chunk_received
+
+    if not first_visible_chunk_received:
+        print(answer_prefix, end="", flush=True)
+        first_visible_chunk_received = True
+
+    print(display_text, end="", flush=True)
+    await emit(runtime, "on_llm_chunk", display_text)
+    return first_visible_chunk_received
+
+
+def _queue_tts_chunk(
+    speech_text: str,
+    *,
+    use_tts: bool,
+    tts: VoiceEngine | None,
+) -> bool:
+    """Queue one clean speech chunk for TTS playback when enabled."""
+    if not speech_text or not use_tts or tts is None:
+        return False
+
+    tts.speak(speech_text)
+    return True
 
 async def process_ai_response(
     *,
@@ -80,11 +134,16 @@ async def process_ai_response(
 ) -> str:
     """Process one assistant turn from LLM stream to display, TTS, and events.
 
-    Minimum v2.0 flow:
-    user input -> LLM stream -> clean display text -> optional TTS ->
-    emotion event -> optional VTS hotkey via plugin.
+    Responsibility:
+    - Consume the LLM stream one chunk at a time.
+    - Parse streaming chunks into display text, speech text, and emotion tags.
+    - Print clean visible text for the user.
+    - Queue clean speech text for optional TTS playback.
+    - Emit runtime events for plugins.
 
-    The function returns the visible assistant text for logging.
+    This helper does not own provider selection, conversation state transitions,
+    or interruption behavior. Those responsibilities are handled by surrounding
+    runtime layers or future milestones.
     """
     try:
         answer_prefix = "  AI: "
@@ -95,9 +154,9 @@ async def process_ai_response(
         stream_state = StreamingState()
         emotion_triggered = False
         first_visible_chunk_received = False
-        first_speech_sent = False
+        tts_output_queued = False
 
-        # thinking: consume the LLM stream one chunk at a time.
+        # Thinking: consume the LLM stream one chunk at a time.
         for clean_chunk, emotions in llm.ask_stream(user_input):
 
             if emotions:
@@ -106,45 +165,41 @@ async def process_ai_response(
             if not clean_chunk and not emotions:
                 continue
 
-            # emotion/VTS: notify plugins once when an emotion is detected.
-            if emotions and not emotion_triggered:
-                try:
-                    emotion = str(emotions[0]).strip().lower()
-                    await emit(runtime, "on_emotion_detected", emotion)
-                except Exception as e:
-                    print(f"[Emotion Plugin Error] {e}")
-                emotion_triggered = True
+            if emotions:
+                emotion_triggered = await _emit_emotion_once(
+                    runtime,
+                    emotions[0],
+                    emotion_triggered=emotion_triggered,
+                )
 
             chunk_result = consume_stream_chunk(stream_state, clean_chunk)
 
             if chunk_result.should_wait_for_more:
                 continue
 
-            if chunk_result.parsed_emotion is not None and not emotion_triggered:
-                try:
-                    await emit(runtime, "on_emotion_detected", chunk_result.parsed_emotion)
-                except Exception as e:
-                    print(f"[Emotion Plugin Error] {e}")
-                emotion_triggered = True
+            emotion_triggered = await _emit_emotion_once(
+                runtime,
+                chunk_result.parsed_emotion,
+                emotion_triggered=emotion_triggered,
+            )
 
             display_text = chunk_result.display_text
             speech_text = chunk_result.speech_text
 
-            # display: show only clean text, not leading emotion tags.
+            # Display: show only clean text, not leading emotion tags.
+            first_visible_chunk_received = await _print_and_emit_display_chunk(
+                runtime,
+                display_text,
+                answer_prefix=answer_prefix,
+                first_visible_chunk_received=first_visible_chunk_received,
+            )
+
             if display_text:
-                if not first_visible_chunk_received:
-                    print(answer_prefix, end="", flush=True)
-                    first_visible_chunk_received = True
-
-                print(display_text, end="", flush=True)
                 full_log_text += display_text
-                await emit(runtime, "on_llm_chunk", display_text)
 
-            # speaking: send the same clean text to TTS when enabled.
-            if speech_text and use_tts and tts is not None:
-                if not first_speech_sent:
-                    first_speech_sent = True
-                tts.speak(speech_text)
+            # Speaking: send the same clean text to TTS when enabled.
+            if _queue_tts_chunk(speech_text, use_tts=use_tts, tts=tts):
+                tts_output_queued = True
 
         if not first_visible_chunk_received:
             print(answer_prefix, end="", flush=True)
@@ -152,7 +207,7 @@ async def process_ai_response(
         print()
 
         if use_tts and tts is not None:
-            if first_speech_sent and tts.is_speaking_active:
+            if tts_output_queued and tts.is_speaking_active:
                 print("[Speaking] Playing TTS output...")
             await wait_for_tts_playback(tts)
 
