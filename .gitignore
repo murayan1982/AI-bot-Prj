@@ -1,0 +1,86 @@
+# =========================
+# Python / FastAPI backend
+# =========================
+
+backend/.venv/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/app/**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+
+# =========================
+# Flutter / Dart app
+# =========================
+
+# Flutter SDK placed inside this workspace
+flutter/
+
+# Flutter project generated files
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+app/build/
+app/coverage/
+
+# Dart / Flutter analysis
+app/.dart_tool/
+app/pubspec.lock
+
+# Android generated files
+app/android/.gradle/
+app/android/local.properties
+app/android/**/build/
+
+# iOS generated files
+app/ios/Pods/
+app/ios/.symlinks/
+app/ios/Flutter/Flutter.framework
+app/ios/Flutter/Flutter.podspec
+app/ios/Flutter/Generated.xcconfig
+app/ios/Flutter/ephemeral/
+app/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS generated files
+app/macos/Flutter/ephemeral/
+app/macos/Pods/
+
+# Windows generated files
+app/windows/flutter/ephemeral/
+
+
+# =========================
+# IDE / OS
+# =========================
+
+.vscode/
+.idea/
+*.iml
+
+.DS_Store
+Thumbs.db
+
+
+# =========================
+# Logs / temp
+# =========================
+
+*.log
+tmp/
+temp/
