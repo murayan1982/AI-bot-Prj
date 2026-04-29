@@ -133,7 +133,7 @@ python examples/minimal_app_text_chat.py --provider openai --model gpt-4o-mini -
 Optional live smoke check:
 
 ```powershell
-python scripts/smoke_public_facade.py --ask
+python scripts/smoke_public_facade.py --ask "こんにちは。短く返して"
 ```
 
 ## Suggested commit summary
