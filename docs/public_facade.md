@@ -30,14 +30,80 @@ It does not launch:
 
 Use `main.py` for full runtime features such as voice input, voice output, and VTS integration.
 
+## Public API
+
+### `create_text_chat_session()`
+
+Creates a `TextChatSession` without starting the full runtime loop.
+
+```python
+from framework import create_text_chat_session
+
+session = create_text_chat_session()
+```
+
+Optional arguments:
+
+```python
+session = create_text_chat_session(
+    preset="text_chat",
+    character_name="default",
+)
+```
+
+`preset` must point to a text-only compatible preset.
+
+### `TextChatSession.ask(text)`
+
+Sends one text turn and returns the full assistant response as a string.
+
+```python
+response = session.ask("Hello. Please answer briefly.")
+print(response)
+```
+
+### `TextChatSession.ask_stream(text)`
+
+Sends one text turn and yields response chunks.
+
+```python
+for chunk in session.ask_stream("Hello. Please answer briefly."):
+    print(chunk, end="")
+```
+
+This is a minimal streaming facade. Provider-specific emotion metadata is intentionally hidden from the public text API for now.
+
+### `TextChatSession.reset()`
+
+Resets provider-owned conversation state when the underlying provider supports it.
+
+```python
+session.reset()
+```
+
+Stateless providers may treat this as a no-op.
+
 ## Supported presets
 
 The text facade accepts text-only presets such as:
 
 - `text_chat`
+- `bilingual_ja_en`
 - other presets where voice input, voice output, VTS, and TTS are disabled
 
 Presets such as `voice_vts` and `text_vts` are rejected by the facade because they require runtime systems outside the text-only public API.
+
+## Import boundary
+
+Importing `framework` should not:
+
+- start the runtime loop
+- connect to VTube Studio
+- initialize STT/TTS
+- create provider clients
+- make network calls
+
+Provider clients are created only when `create_text_chat_session()` is called.
 
 ## Smoke checks
 
