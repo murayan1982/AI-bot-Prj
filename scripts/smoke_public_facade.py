@@ -22,6 +22,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 EXPECTED_PUBLIC_API = [
+    "FacadeConfigError",
+    "FacadeError",
+    "FacadeProviderError",
     "TextChatSession",
     "create_text_chat_session",
 ]
@@ -67,7 +70,7 @@ def check_import_boundary() -> None:
 def check_text_only_config_boundary() -> None:
     # This intentionally checks the internal facade boundary without creating an
     # actual LLM instance, so it can run without provider API keys.
-    from framework.facade import _load_facade_config
+    from framework.facade import FacadeConfigError, _load_facade_config
 
     text_config = _load_facade_config(
         preset="text_chat",
@@ -84,7 +87,7 @@ def check_text_only_config_boundary() -> None:
             preset="voice_vts",
             character_name="default",
         )
-    except ValueError as e:
+    except FacadeConfigError as e:
         _assert(
             "text-only presets only" in str(e),
             f"Unexpected voice_vts validation error: {e}",
@@ -99,7 +102,7 @@ def check_text_only_config_boundary() -> None:
 def check_provider_model_resolution() -> None:
     # This checks facade provider/model argument handling without creating
     # provider clients or requiring API keys.
-    from framework.facade import _resolve_provider_model
+    from framework.facade import FacadeProviderError, _resolve_provider_model
 
     _assert(
         _resolve_provider_model("openai", None) == ("openai", "gpt-4o-mini"),
@@ -118,7 +121,7 @@ def check_provider_model_resolution() -> None:
 
     try:
         _resolve_provider_model("unknown-provider", None)
-    except ValueError as e:
+    except FacadeProviderError as e:
         _assert(
             "Unsupported facade provider" in str(e),
             f"Unexpected provider validation error: {e}",
@@ -127,6 +130,7 @@ def check_provider_model_resolution() -> None:
         raise AssertionError("unknown provider should be rejected")
 
     print("[OK] facade provider/model arguments resolve without creating clients")
+
 
 def check_live_text_turn(prompt: str) -> None:
     from framework import create_text_chat_session
@@ -159,6 +163,7 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     check_import_boundary()
     check_text_only_config_boundary()
+    check_provider_model_resolution()
 
     if args.ask:
         check_live_text_turn(args.ask)

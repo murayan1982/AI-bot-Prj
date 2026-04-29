@@ -29,6 +29,18 @@ After the tag, write the normal response text.
 Do not output multiple emotion tags."""
 
 
+class FacadeError(Exception):
+    """Base exception for public facade integration errors."""
+
+
+class FacadeConfigError(FacadeError):
+    """Raised when facade preset or text-only configuration is invalid."""
+
+
+class FacadeProviderError(FacadeError):
+    """Raised when facade provider/model resolution or creation fails."""
+
+
 class TextChatSession:
     """Public text-chat session facade.
 
@@ -55,8 +67,6 @@ class TextChatSession:
         self._llm.reset_session()
 
 
-# TODO(v2.4 Day3): replace public ValueError/FileNotFoundError paths with
-# facade-specific exception classes once the error boundary is formalized.
 def _resolve_preset_name(preset: str | None) -> str:
     """Resolve facade preset priority: explicit argument -> .env -> default."""
     if preset:
@@ -87,7 +97,7 @@ def _validate_text_only_config(config: "RuntimeConfig") -> None:
     if _is_text_only_config(config):
         return
 
-    raise ValueError(
+    raise FacadeConfigError(
         "create_text_chat_session() currently supports text-only presets only. "
         f"Preset '{config.app_preset}' enables one or more unsupported runtime features: "
         f"input_voice_enabled={config.input_voice_enabled}, "
@@ -122,7 +132,7 @@ def _load_facade_config(
     try:
         preset_data = load_preset_file(preset_name)
     except FileNotFoundError as e:
-        raise FileNotFoundError(
+        raise FacadeConfigError(
             f"Facade preset not found: {preset_name!r}. "
             "Pass an existing text-only preset name, such as 'text_chat'."
         ) from e
@@ -131,7 +141,14 @@ def _load_facade_config(
         "character_name",
         preset_data.get("character", "default"),
     )
-    character_data = load_character_data(resolved_character_name)
+
+    try:
+        character_data = load_character_data(resolved_character_name)
+    except FileNotFoundError as e:
+        raise FacadeConfigError(
+            f"Facade character not found: {resolved_character_name!r}. "
+            "Pass an existing character name or update the selected preset."
+        ) from e
 
     config = RuntimeConfig(
         app_preset=preset_name,
@@ -197,15 +214,18 @@ def _build_catalog_llm(llm_name: str, system_instruction: str) -> BaseLLM:
     from registry.llm import LLM_CATALOG
 
     if llm_name not in LLM_CATALOG:
-        raise ValueError(f"Unknown LLM catalog entry: {llm_name}")
+        raise FacadeProviderError(f"Unknown LLM catalog entry: {llm_name}")
 
     llm_config = LLM_CATALOG[llm_name]
 
-    return create_llm(
-        provider=llm_config["provider"],
-        model=llm_config["model"],
-        system_instruction=system_instruction,
-    )
+    try:
+        return create_llm(
+            provider=llm_config["provider"],
+            model=llm_config["model"],
+            system_instruction=system_instruction,
+        )
+    except ValueError as e:
+        raise FacadeProviderError(str(e)) from e
 
 
 def _normalize_provider(provider: str) -> str:
@@ -227,7 +247,7 @@ def _resolve_default_model_for_provider(provider: str) -> str:
         if llm_config.get("provider") == provider:
             return llm_config["model"]
 
-    raise ValueError(
+    raise FacadeProviderError(
         f"No default model is registered for provider {provider!r}. "
         "Pass both provider and model, or add the provider to registry.llm.LLM_CATALOG."
     )
@@ -245,7 +265,7 @@ def _resolve_provider_model(
 
     if resolved_provider not in supported_providers:
         public_aliases = sorted(PROVIDER_ALIASES.keys())
-        raise ValueError(
+        raise FacadeProviderError(
             f"Unsupported facade provider: {provider!r}. "
             f"Supported providers: {sorted(supported_providers)}. "
             f"Aliases: {public_aliases}."
@@ -268,11 +288,14 @@ def _build_direct_provider_llm(
         model=model,
     )
 
-    return create_llm(
-        provider=resolved_provider,
-        model=resolved_model,
-        system_instruction=system_instruction,
-    )
+    try:
+        return create_llm(
+            provider=resolved_provider,
+            model=resolved_model,
+            system_instruction=system_instruction,
+        )
+    except ValueError as e:
+        raise FacadeProviderError(str(e)) from e
 
 
 def _build_text_chat_llm(
