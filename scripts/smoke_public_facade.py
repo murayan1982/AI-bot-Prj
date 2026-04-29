@@ -132,6 +132,44 @@ def check_provider_model_resolution() -> None:
     print("[OK] facade provider/model arguments resolve without creating clients")
 
 
+
+def check_minimal_app_example_import() -> None:
+    # The app integration example should be importable without creating an LLM
+    # client or loading the full runtime/audio/VTS stack.
+    import importlib.util
+
+    example_path = PROJECT_ROOT / "examples" / "minimal_app_text_chat.py"
+    spec = importlib.util.spec_from_file_location(
+        "minimal_app_text_chat_smoke",
+        example_path,
+    )
+    _assert(spec is not None and spec.loader is not None, "Could not load example spec")
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    _assert(
+        hasattr(module, "MinimalTextChatApp"),
+        "minimal app example should expose MinimalTextChatApp",
+    )
+    _assert(
+        hasattr(module, "build_app"),
+        "minimal app example should expose build_app",
+    )
+
+    imported_forbidden_modules = [
+        module_name
+        for module_name in FORBIDDEN_IMPORTS_AFTER_FRAMEWORK_IMPORT
+        if module_name in sys.modules
+    ]
+    _assert(
+        not imported_forbidden_modules,
+        "minimal app example import should not load runtime/audio/VTS modules: "
+        f"{imported_forbidden_modules}",
+    )
+
+    print("[OK] minimal app integration example is importable")
+
 def check_live_text_turn(prompt: str) -> None:
     from framework import create_text_chat_session
 
@@ -164,6 +202,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_import_boundary()
     check_text_only_config_boundary()
     check_provider_model_resolution()
+    check_minimal_app_example_import()
 
     if args.ask:
         check_live_text_turn(args.ask)
