@@ -16,6 +16,13 @@ LANGUAGE_NAMES = {
 
 DEFAULT_TEXT_CHAT_PRESET = "text_chat"
 
+# Public-facing aliases for app developers. Internal provider identifiers remain
+# owned by llm.factory / registry.llm.
+PROVIDER_ALIASES = {
+    "gemini": "google",
+    "grok": "xai",
+}
+
 EMOTION_TAG_INSTRUCTION = """At the beginning of every assistant response, output exactly one emotion tag:
 [emotion:neutral], [emotion:happy], [emotion:sad], [emotion:angry], [emotion:surprised], or [emotion:confused].
 After the tag, write the normal response text.
@@ -48,6 +55,8 @@ class TextChatSession:
         self._llm.reset_session()
 
 
+# TODO(v2.4 Day3): replace public ValueError/FileNotFoundError paths with
+# facade-specific exception classes once the error boundary is formalized.
 def _resolve_preset_name(preset: str | None) -> str:
     """Resolve facade preset priority: explicit argument -> .env -> default."""
     if preset:
@@ -199,8 +208,91 @@ def _build_catalog_llm(llm_name: str, system_instruction: str) -> BaseLLM:
     )
 
 
-def _build_text_chat_llm(system_instruction: str) -> BaseLLM:
-    """Build the public facade's text-chat LLM path."""
+def _normalize_provider(provider: str) -> str:
+    """Normalize public provider aliases to internal provider identifiers."""
+    normalized = provider.strip().lower()
+    return PROVIDER_ALIASES.get(normalized, normalized)
+
+
+def _resolve_default_model_for_provider(provider: str) -> str:
+    """Resolve the first registry model matching a provider.
+
+    The registry remains the owner of default provider/model pairs. The facade
+    only selects an existing catalog model when an app passes provider without a
+    model override.
+    """
+    from registry.llm import LLM_CATALOG
+
+    for llm_config in LLM_CATALOG.values():
+        if llm_config.get("provider") == provider:
+            return llm_config["model"]
+
+    raise ValueError(
+        f"No default model is registered for provider {provider!r}. "
+        "Pass both provider and model, or add the provider to registry.llm.LLM_CATALOG."
+    )
+
+
+def _resolve_provider_model(
+    provider: str,
+    model: str | None,
+) -> tuple[str, str]:
+    """Validate facade provider/model arguments and resolve model defaults."""
+    from llm.factory import get_supported_llm_providers
+
+    resolved_provider = _normalize_provider(provider)
+    supported_providers = get_supported_llm_providers()
+
+    if resolved_provider not in supported_providers:
+        public_aliases = sorted(PROVIDER_ALIASES.keys())
+        raise ValueError(
+            f"Unsupported facade provider: {provider!r}. "
+            f"Supported providers: {sorted(supported_providers)}. "
+            f"Aliases: {public_aliases}."
+        )
+
+    resolved_model = model or _resolve_default_model_for_provider(resolved_provider)
+    return resolved_provider, resolved_model
+
+
+def _build_direct_provider_llm(
+    provider: str,
+    model: str | None,
+    system_instruction: str,
+) -> BaseLLM:
+    """Build one explicitly selected provider/model for facade integration use."""
+    from llm.factory import create_llm
+
+    resolved_provider, resolved_model = _resolve_provider_model(
+        provider=provider,
+        model=model,
+    )
+
+    return create_llm(
+        provider=resolved_provider,
+        model=resolved_model,
+        system_instruction=system_instruction,
+    )
+
+
+def _build_text_chat_llm(
+    system_instruction: str,
+    provider: str | None,
+    model: str | None,
+) -> BaseLLM:
+    """Build the public facade's text-chat LLM path.
+
+    When provider is omitted, the facade keeps the v2.3 behavior and uses the
+    chat route with fallback. When provider is provided, it builds exactly one
+    provider/model pair so external apps can choose their integration boundary.
+    """
+    if provider:
+        return _build_direct_provider_llm(
+            provider=provider,
+            model=model,
+            system_instruction=system_instruction,
+        )
+
     from llm.fallback_llm import FallbackLLM
     from registry.llm import LLM_ROUTES
 
@@ -214,6 +306,8 @@ def _build_text_chat_llm(system_instruction: str) -> BaseLLM:
 def create_text_chat_session(
     preset: str | None = None,
     character_name: str | None = None,
+    provider: str | None = None,
+    model: str | None = None,
 ) -> TextChatSession:
     """Create a text-only chat session without starting the app runtime loop.
 
@@ -222,11 +316,19 @@ def create_text_chat_session(
             if available, otherwise 'text_chat' is used.
         character_name: Optional character override. When omitted, the character
             configured by the selected preset is used.
+        provider: Optional direct LLM provider override. When omitted, the
+            facade uses the default chat route with fallback.
+        model: Optional model override for the selected provider. Ignored when
+            provider is omitted.
     """
     config = _load_facade_config(
         preset=preset,
         character_name=character_name,
     )
     system_instruction = _build_system_instruction(config)
-    llm = _build_text_chat_llm(system_instruction)
+    llm = _build_text_chat_llm(
+        system_instruction=system_instruction,
+        provider=provider,
+        model=model,
+    )
     return TextChatSession(llm)

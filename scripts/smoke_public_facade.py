@@ -96,6 +96,38 @@ def check_text_only_config_boundary() -> None:
     print("[OK] voice_vts is rejected by the text facade boundary")
 
 
+def check_provider_model_resolution() -> None:
+    # This checks facade provider/model argument handling without creating
+    # provider clients or requiring API keys.
+    from framework.facade import _resolve_provider_model
+
+    _assert(
+        _resolve_provider_model("openai", None) == ("openai", "gpt-4o-mini"),
+        "openai should resolve to the registered default model",
+    )
+    _assert(
+        _resolve_provider_model("gemini", "custom-gemini-model")
+        == ("google", "custom-gemini-model"),
+        "gemini alias should resolve to internal google provider",
+    )
+    _assert(
+        _resolve_provider_model("grok", "custom-grok-model")
+        == ("xai", "custom-grok-model"),
+        "grok alias should resolve to internal xai provider",
+    )
+
+    try:
+        _resolve_provider_model("unknown-provider", None)
+    except ValueError as e:
+        _assert(
+            "Unsupported facade provider" in str(e),
+            f"Unexpected provider validation error: {e}",
+        )
+    else:
+        raise AssertionError("unknown provider should be rejected")
+
+    print("[OK] facade provider/model arguments resolve without creating clients")
+
 def check_live_text_turn(prompt: str) -> None:
     from framework import create_text_chat_session
 
