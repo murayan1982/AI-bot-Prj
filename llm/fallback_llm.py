@@ -15,7 +15,7 @@ class FallbackLLM(BaseLLM):
     def model_name(self) -> str:
         return f"{self.primary.model_name}->{self.fallback.model_name}"
 
-    def reset_session(self):
+    def reset_session(self) -> None:
         self.primary.reset_session()
         self.fallback.reset_session()
 

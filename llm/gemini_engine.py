@@ -31,7 +31,7 @@ class GeminiEngine(BaseLLM):
         self.current_mood = "Normal"
         self._start_new_session()
 
-    def _start_new_session(self):
+    def _start_new_session(self) -> None:
         self.chat = self.client.chats.create(
             model=self.model_id,
             config={
@@ -86,7 +86,7 @@ class GeminiEngine(BaseLLM):
         except Exception as e:
             raise RuntimeError(f"{self.provider_name} failed: {e}") from e
 
-    def _refresh_session_with_mood(self):
+    def _refresh_session_with_mood(self) -> None:
         try:
             mood_prompt = (
                 "Summarize the current relationship atmosphere with the user "
