@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import replace
+import os
 from typing import TYPE_CHECKING, Generator
 
 from llm.base import BaseLLM
@@ -13,6 +13,8 @@ LANGUAGE_NAMES = {
     "ja": "Japanese",
     "en": "English",
 }
+
+DEFAULT_TEXT_CHAT_PRESET = "text_chat"
 
 EMOTION_TAG_INSTRUCTION = """At the beginning of every assistant response, output exactly one emotion tag:
 [emotion:neutral], [emotion:happy], [emotion:sad], [emotion:angry], [emotion:surprised], or [emotion:confused].
@@ -46,6 +48,111 @@ class TextChatSession:
         self._llm.reset_session()
 
 
+def _resolve_preset_name(preset: str | None) -> str:
+    """Resolve facade preset priority: explicit argument -> .env -> default."""
+    if preset:
+        return preset
+
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        pass
+    else:
+        load_dotenv()
+
+    return os.getenv("APP_PRESET", DEFAULT_TEXT_CHAT_PRESET)
+
+
+def _is_text_only_config(config: "RuntimeConfig") -> bool:
+    """Return whether a RuntimeConfig is compatible with the text facade."""
+    return (
+        not config.input_voice_enabled
+        and not config.output_voice_enabled
+        and not config.vts_enabled
+        and config.tts_provider == "none"
+    )
+
+
+def _validate_text_only_config(config: "RuntimeConfig") -> None:
+    """Reject presets that would require runtime systems outside the facade."""
+    if _is_text_only_config(config):
+        return
+
+    raise ValueError(
+        "create_text_chat_session() currently supports text-only presets only. "
+        f"Preset '{config.app_preset}' enables one or more unsupported runtime features: "
+        f"input_voice_enabled={config.input_voice_enabled}, "
+        f"output_voice_enabled={config.output_voice_enabled}, "
+        f"vts_enabled={config.vts_enabled}, "
+        f"tts_provider={config.tts_provider!r}. "
+        "Use a text-only preset such as 'text_chat', or launch main.py for full runtime features."
+    )
+
+
+def _load_facade_config(
+    preset: str | None,
+    character_name: str | None,
+) -> "RuntimeConfig":
+    """Build RuntimeConfig for the public facade without starting the runtime loop.
+
+    Boundary rules:
+    - explicit function arguments override preset / environment defaults
+    - APP_PRESET is used only when preset is not passed
+    - character_name overrides the character selected by the preset
+    - only text-only presets are accepted by the public text-chat facade
+    """
+    from config.loader import (
+        RuntimeConfig,
+        load_character_data,
+        load_preset_file,
+        normalize_language_code,
+    )
+
+    preset_name = _resolve_preset_name(preset)
+
+    try:
+        preset_data = load_preset_file(preset_name)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(
+            f"Facade preset not found: {preset_name!r}. "
+            "Pass an existing text-only preset name, such as 'text_chat'."
+        ) from e
+
+    resolved_character_name = character_name or preset_data.get(
+        "character_name",
+        preset_data.get("character", "default"),
+    )
+    character_data = load_character_data(resolved_character_name)
+
+    config = RuntimeConfig(
+        app_preset=preset_name,
+        input_language_code=normalize_language_code(
+            preset_data.get("input_language_code", "ja"),
+            default="ja",
+        ),
+        output_language_code=normalize_language_code(
+            preset_data.get("output_language_code", "ja"),
+            default="en",
+        ),
+        input_voice_enabled=bool(preset_data.get("input_voice_enabled", False)),
+        output_voice_enabled=bool(preset_data.get("output_voice_enabled", False)),
+        vts_enabled=bool(preset_data.get("vts_enabled", False)),
+        tts_provider=preset_data.get("tts_provider", "none"),
+        allow_text_fallback_during_stt=bool(
+            preset_data.get("allow_text_fallback_during_stt", False)
+        ),
+        emotion_enabled=bool(preset_data.get("emotion_enabled", False)),
+        vts_emotion_enabled=bool(preset_data.get("vts_emotion_enabled", False)),
+        character_name=resolved_character_name,
+        character_profile=character_data.profile,
+        system_prompt=character_data.system_prompt,
+        vts_hotkeys=character_data.vts_hotkeys,
+    )
+
+    _validate_text_only_config(config)
+    return config
+
+
 def _build_system_instruction(config: "RuntimeConfig") -> str:
     """Build the same language/system instruction used by the runtime layer."""
     base_system_prompt = config.system_prompt.strip()
@@ -73,20 +180,6 @@ def _build_system_instruction(config: "RuntimeConfig") -> str:
         instruction_parts.append(base_system_prompt)
 
     return "\n\n".join(instruction_parts)
-
-
-def _as_text_chat_config(config: "RuntimeConfig") -> "RuntimeConfig":
-    """Force text-only runtime flags for the public text-chat facade."""
-    return replace(
-        config,
-        app_preset="text_chat",
-        input_voice_enabled=False,
-        output_voice_enabled=False,
-        vts_enabled=False,
-        tts_provider="none",
-        allow_text_fallback_during_stt=False,
-        vts_emotion_enabled=False,
-    )
 
 
 def _build_catalog_llm(llm_name: str, system_instruction: str) -> BaseLLM:
@@ -118,11 +211,22 @@ def _build_text_chat_llm(system_instruction: str) -> BaseLLM:
     return FallbackLLM(primary, fallback)
 
 
-def create_text_chat_session() -> TextChatSession:
-    """Create a text-only chat session without starting the app runtime loop."""
-    from config.loader import load_runtime_config
+def create_text_chat_session(
+    preset: str | None = None,
+    character_name: str | None = None,
+) -> TextChatSession:
+    """Create a text-only chat session without starting the app runtime loop.
 
-    config = _as_text_chat_config(load_runtime_config())
+    Args:
+        preset: Optional text-only preset name. When omitted, APP_PRESET is used
+            if available, otherwise 'text_chat' is used.
+        character_name: Optional character override. When omitted, the character
+            configured by the selected preset is used.
+    """
+    config = _load_facade_config(
+        preset=preset,
+        character_name=character_name,
+    )
     system_instruction = _build_system_instruction(config)
     llm = _build_text_chat_llm(system_instruction)
     return TextChatSession(llm)
