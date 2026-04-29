@@ -79,9 +79,12 @@ async def initialize_components(config) -> dict:
     llm = build_llm(system_instruction)
     log_file = create_log_file()
 
-    vts = None
+    # STT/TTS provider construction is intentionally kept here for now.
+    # v2.2 only reviews the boundary; full STT/TTS provider abstraction is
+    # deferred to a future milestone.
     stt = STTEngine(language_code=config.input_language_code) if use_stt else None
     tts = None
+    vts = None
 
     if use_tts:
         if config.tts_provider == "none":

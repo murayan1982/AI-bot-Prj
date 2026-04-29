@@ -3,6 +3,22 @@ import asyncio
 
 
 class STTEngine:
+    """
+    Google Speech Recognition-backed STT engine.
+
+    Public boundary used by the runtime pipeline:
+    - listen(): capture one voice input turn and return recognized text.
+
+    This class currently owns:
+    - microphone access
+    - ambient noise adjustment
+    - speech_recognition provider call
+    - STT timeout/error handling
+
+    The runtime pipeline should only depend on listen().
+    Provider abstraction is intentionally deferred to a future milestone.
+    """
+
     def __init__(self, language_code: str = "ja"):
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
@@ -11,7 +27,16 @@ class STTEngine:
         # Sensitivity adjustment for silence
         self.recognizer.pause_threshold = 1.0
 
-    async def listen(self):
+    async def listen(self) -> str:
+        """
+        Capture and recognize one voice input turn.
+
+        Returns:
+            Recognized text, or an empty string when no usable input is available.
+
+        This method should not raise provider/runtime STT failures to the
+        session loop during normal recognition errors.
+        """
         with self.microphone as source:
             self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
 

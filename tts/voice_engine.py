@@ -77,11 +77,11 @@ class VoiceEngine:
             self._enqueue_segment(tail)
 
     @property
-    def is_speaking_active(self):
+    def is_speaking_active(self) -> bool:
         """Return True while playback is active or queued audio remains."""
         return self.is_speaking or not self.msg_queue.empty()
 
-    def stop_immediately(self):
+    def stop_immediately(self) -> None:
         """
         Stop current playback and clear queued segments.
 
@@ -98,7 +98,7 @@ class VoiceEngine:
             except queue.Empty:
                 break
 
-    def _queue_worker(self):
+    def _queue_worker(self) -> None:
         while True:
             text = self.msg_queue.get()
             self.is_speaking = True
