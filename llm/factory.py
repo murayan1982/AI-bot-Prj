@@ -12,7 +12,10 @@ def get_supported_llm_providers() -> set[str]:
 def _load_engine_class(provider: str):
     provider_config = LLM_PROVIDER_MODULES.get(provider)
     if provider_config is None:
-        raise ValueError(f"Unsupported LLM provider: {provider}")
+        raise ValueError(
+            f"Unsupported LLM provider: {provider}. "
+            f"Supported providers: {sorted(get_supported_llm_providers())}"
+        )
 
     module_name, class_name = provider_config
 
