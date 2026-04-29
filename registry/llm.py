@@ -18,6 +18,10 @@ LLM_CATALOG = {
         "provider": "xai",
         "model": "grok-4-fast-reasoning",
     },
+    "openai_fast": {
+        "provider": "openai",
+        "model": "gpt-4o-mini",
+    },
 }
 
 LLM_ROUTES = {
