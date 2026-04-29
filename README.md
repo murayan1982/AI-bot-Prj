@@ -80,11 +80,11 @@ Recommended order:
 
 ## Public Text Chat Facade
 
-As of v2.3.0, the framework exposes a small public API for text-only chat usage.
+As of v2.4.0, the framework exposes a small public API for text-only chat usage and app-style integration.
 
 This is intended for developers who want to use the project as a framework from their own Python code, without starting the full interactive runtime.
 
-Minimal example:
+Minimal framework API example:
 
 ```python
 from framework import create_text_chat_session
@@ -94,7 +94,7 @@ response = session.ask("Hello. Please answer briefly.")
 print(response)
 ```
 
-You can also pass a text-only preset explicitly:
+You can also pass a text-only preset and character explicitly:
 
 ```python
 from framework import create_text_chat_session
@@ -107,12 +107,50 @@ session = create_text_chat_session(
 print(session.ask("こんにちは。短く返して"))
 ```
 
+v2.4.0 also supports direct provider/model selection from the facade:
+
+```python
+from framework import create_text_chat_session
+
+session = create_text_chat_session(
+    provider="openai",
+    model="gpt-4o-mini",
+)
+
+print(session.ask("こんにちは。1文で短く返して。"))
+```
+
+Supported public provider names include:
+
+- `openai`
+- `gemini`
+- `grok`
+
+`gemini` and `grok` are public aliases. Internally, provider definitions are still owned by `llm.factory` and `registry/llm.py`.
+
+If `provider` is omitted, the facade keeps the default chat route with fallback.
+If `provider` is passed without `model`, the facade resolves the default model from `registry/llm.py`.
+
+For app-style integration, catch public facade errors at the application boundary:
+
+```python
+from framework import FacadeError, create_text_chat_session
+
+try:
+    session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+    print(session.ask("Hello."))
+except FacadeError as e:
+    print(f"Framework integration error: {e}")
+```
+
 The public facade is intentionally text-only for now.
 
 Supported:
 
 - `text_chat`
 - other text-only compatible presets such as `bilingual_ja_en`
+- direct provider/model selection for text chat
+- app boundary error handling through `FacadeError`
 
 Not supported through this facade yet:
 
@@ -123,6 +161,7 @@ Not supported through this facade yet:
 
 Use `main.py` or the preset run scripts when you want the full runtime experience.
 Use `framework.create_text_chat_session()` when you want a lightweight framework API for text chat.
+Use `examples/minimal_app_text_chat.py` when you want to see the smallest app-style wrapper around the framework API.
 
 Importing `framework` should not start the runtime, connect to VTube Studio, initialize STT/TTS, or make network calls.
 Provider clients are created only when a session is explicitly created and used.
@@ -130,6 +169,8 @@ Provider clients are created only when a session is explicitly created and used.
 For more details, see:
 
 - `docs/public_facade.md`
+- `examples/public_text_chat.py`
+- `examples/minimal_app_text_chat.py`
 
 ---
 
@@ -246,9 +287,12 @@ and interruption behavior remain future runtime topics.
 - Plugin-based VTS emotion handling
 - Clean modular architecture
 - Public text chat facade for framework-style usage
+- Facade-level provider/model selection for app integration
+- Public facade error classes for application boundary handling
 
-Note: OpenAI support is available as of v2.2.0, but the default route is not changed yet.
-The default route still uses the existing Gemini / Grok configuration.
+Note: OpenAI support is available as of v2.2.0.
+As of v2.4.0, text facade users can select providers directly with `create_text_chat_session(provider=..., model=...)`.
+When `provider` is omitted, the default route still uses the existing Gemini / Grok configuration.
 
 ---
 
@@ -588,6 +632,9 @@ Use these files as the main entry points:
 - `examples/public_text_chat.py`
   - Shows the minimum public facade usage
 
+- `examples/minimal_app_text_chat.py`
+  - Shows a minimal app-style wrapper around the public text facade
+
 A simple rule:
 
 - Change who the assistant is -> edit `characters/*`
@@ -731,7 +778,9 @@ The main focus is LLM provider extensibility:
 
 The current default route remains Gemini / Grok based.
 
-OpenAI can be used by adding `OPENAI_API_KEY` to `.env` and selecting the OpenAI catalog entry from `registry/llm.py`.
+OpenAI can be used by adding `OPENAI_API_KEY` to `.env`.
+For full runtime routing, select or edit the OpenAI catalog entry from `registry/llm.py`.
+For public text facade usage, pass `provider="openai"` and an optional `model` to `create_text_chat_session()`.
 
 STT and TTS provider abstraction are intentionally not redesigned in v2.2.0.
 
@@ -740,6 +789,35 @@ For now:
 - STT runtime use is centered around `STTEngine.listen()`
 - TTS runtime use is centered around `VoiceEngine.speak()`, `flush()`, `is_speaking_active`, and `stop_immediately()`
 - full STT / TTS provider abstraction is left for a future milestone
+
+---
+
+## v2.4 Public Facade Integration Notes
+
+v2.4.0 focuses on making the public text facade easier to embed in external applications.
+
+The main focus is integration stability:
+
+- `create_text_chat_session()` accepts optional `provider` and `model` arguments
+- provider aliases such as `gemini` and `grok` are accepted at the public facade boundary
+- the default no-argument behavior remains backward compatible
+- facade-specific errors are exposed through `FacadeError`, `FacadeConfigError`, and `FacadeProviderError`
+- `examples/minimal_app_text_chat.py` shows a tiny application wrapper around the framework API
+
+Example:
+
+```python
+from framework import FacadeError, create_text_chat_session
+
+try:
+    session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+    print(session.ask("Hello. Please answer briefly."))
+except FacadeError as e:
+    print(f"Framework integration error: {e}")
+```
+
+This facade is still intentionally text-only.
+Voice, TTS, Live2D / VTube Studio control, and the full runtime loop should still be launched through `main.py` or the preset run scripts.
 
 ---
 
