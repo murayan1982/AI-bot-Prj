@@ -180,7 +180,7 @@ and interruption behavior remain future runtime topics.
 
 ## Current Features
 
-- Multi-LLM support (Gemini / Grok)
+- Multi-LLM support (Gemini / Grok / OpenAI)
 - Automatic routing (chat vs code)
 - Fallback handling
 - Voice input (STT) / output (TTS)
@@ -189,6 +189,9 @@ and interruption behavior remain future runtime topics.
 - Character-level VTS hotkey mapping
 - Plugin-based VTS emotion handling
 - Clean modular architecture
+
+Note: OpenAI support is available as of v2.2.0, but the default route is not changed yet.
+The default route still uses the existing Gemini / Grok configuration.
 
 ---
 
@@ -252,8 +255,12 @@ core/
 llm/
   base.py
   builder.py
+  factory.py
   router_llm.py
   fallback_llm.py
+  gemini_engine.py
+  grok_engine.py
+  openai_engine.py
 
 live2d/
   vts_client.py
@@ -445,24 +452,33 @@ cp .env.example .env
 
 Then open `.env` and add your API keys.
 
-Required:
+Required for the default LLM route:
 
 ```env
-GEMINI_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-Optional:
+Optional LLM providers:
 
 ```env
 XAI_API_KEY=your_xai_api_key_here
-ELEVENLABS_API_KEY=your_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 Optional voice configuration:
 
 ```env
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 VOICE_MASTER=[{"id":"your_voice_id_here","name":"MyVoice"}]
 ```
+
+Notes:
+
+- `GEMINI_API_KEY` is required for the current default route.
+- `XAI_API_KEY` is used when Grok is enabled as a provider or fallback.
+- `OPENAI_API_KEY` is used when OpenAI is selected as a provider.
+- OpenAI support is available in v2.2.0, but OpenAI is not the default provider yet.
+- Do not commit your `.env` file.
 
 ---
 
@@ -500,6 +516,21 @@ A simple rule:
 - Change who the assistant is -> edit `characters/*`
 - Change how the framework runs -> edit `.env` or `presets/*.json`
 - Change provider definitions -> edit `registry/*`
+
+### LLM registry validation
+
+v2.2.0 adds lightweight validation for LLM provider registry definitions.
+
+You can check the LLM catalog and route definitions without creating provider clients or making network calls:
+
+```bash
+python -c "from llm.builder import validate_llm_registry; validate_llm_registry(); print('LLM registry OK')"
+```
+
+This validation checks provider names, model definitions, and route references.
+
+It does not validate API keys.
+Provider API keys are checked only when the corresponding provider is instantiated at runtime.
 
 ---
 
@@ -585,6 +616,32 @@ Runtime behavior is configured in the following order:
 ### Recommended development starting point
 
 Use `text_chat` as the safe default preset for regular development.
+
+---
+
+## v2.2 Provider Boundary Notes
+
+v2.2.0 focuses on provider boundary cleanup.
+
+The main focus is LLM provider extensibility:
+
+- Gemini, Grok, and OpenAI are handled through the same `BaseLLM` interface
+- LLM provider definitions are managed in `registry/llm.py`
+- LLM provider construction is handled by `llm/factory.py`
+- LLM route construction and validation are handled by `llm/builder.py`
+- OpenAI provider support is available, but OpenAI is not the default provider in v2.2.0
+
+The current default route remains Gemini / Grok based.
+
+OpenAI can be used by adding `OPENAI_API_KEY` to `.env` and selecting the OpenAI catalog entry from `registry/llm.py`.
+
+STT and TTS provider abstraction are intentionally not redesigned in v2.2.0.
+
+For now:
+
+- STT runtime use is centered around `STTEngine.listen()`
+- TTS runtime use is centered around `VoiceEngine.speak()`, `flush()`, `is_speaking_active`, and `stop_immediately()`
+- full STT / TTS provider abstraction is left for a future milestone
 
 ---
 
