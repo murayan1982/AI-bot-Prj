@@ -77,6 +77,62 @@ Recommended order:
 
 ---
 
+
+## Public Text Chat Facade
+
+As of v2.3.0, the framework exposes a small public API for text-only chat usage.
+
+This is intended for developers who want to use the project as a framework from their own Python code, without starting the full interactive runtime.
+
+Minimal example:
+
+```python
+from framework import create_text_chat_session
+
+session = create_text_chat_session()
+response = session.ask("Hello. Please answer briefly.")
+print(response)
+```
+
+You can also pass a text-only preset explicitly:
+
+```python
+from framework import create_text_chat_session
+
+session = create_text_chat_session(
+    preset="text_chat",
+    character_name="default",
+)
+
+print(session.ask("こんにちは。短く返して"))
+```
+
+The public facade is intentionally text-only for now.
+
+Supported:
+
+- `text_chat`
+- other text-only compatible presets such as `bilingual_ja_en`
+
+Not supported through this facade yet:
+
+- voice input
+- TTS output
+- Live2D / VTube Studio control
+- full runtime session loop
+
+Use `main.py` or the preset run scripts when you want the full runtime experience.
+Use `framework.create_text_chat_session()` when you want a lightweight framework API for text chat.
+
+Importing `framework` should not start the runtime, connect to VTube Studio, initialize STT/TTS, or make network calls.
+Provider clients are created only when a session is explicitly created and used.
+
+For more details, see:
+
+- `docs/public_facade.md`
+
+---
+
 ## Presets
 
 ### `text_chat`
@@ -189,6 +245,7 @@ and interruption behavior remain future runtime topics.
 - Character-level VTS hotkey mapping
 - Plugin-based VTS emotion handling
 - Clean modular architecture
+- Public text chat facade for framework-style usage
 
 Note: OpenAI support is available as of v2.2.0, but the default route is not changed yet.
 The default route still uses the existing Gemini / Grok configuration.
@@ -284,6 +341,20 @@ config/
 registry/
   llm.py
   tts.py
+
+framework/
+  __init__.py
+  facade.py
+
+examples/
+  public_text_chat.py
+
+scripts/
+  smoke_public_facade.py
+
+docs/
+  public_facade.md
+  roadmap_v3.0.md
 
 characters/
   default/
@@ -511,6 +582,12 @@ Use these files as the main entry points:
 - `registry/tts.py`
   - Defines available TTS providers and models
 
+- `framework/`
+  - Provides the public facade for framework-style usage
+
+- `examples/public_text_chat.py`
+  - Shows the minimum public facade usage
+
 A simple rule:
 
 - Change who the assistant is -> edit `characters/*`
@@ -531,6 +608,27 @@ This validation checks provider names, model definitions, and route references.
 
 It does not validate API keys.
 Provider API keys are checked only when the corresponding provider is instantiated at runtime.
+
+### Public facade smoke check
+
+The public facade can be checked without running a live LLM request:
+
+```bash
+python scripts/smoke_public_facade.py
+```
+
+This checks that:
+
+- `import framework` exposes the expected public API
+- importing `framework` does not load runtime/audio/VTS modules
+- `text_chat` is accepted by the text facade boundary
+- `voice_vts` is rejected by the text facade boundary
+
+To run a live one-turn LLM check through the facade, pass `--ask`:
+
+```bash
+python scripts/smoke_public_facade.py --ask "こんにちは。短く返して"
+```
 
 ---
 
