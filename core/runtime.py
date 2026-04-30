@@ -13,16 +13,7 @@ from plugins.builtin import (
 )
 from core.events import create_hook_registry
 from core.state import RuntimeState
-
-LANGUAGE_NAMES = {
-    "ja": "Japanese",
-    "en": "English",
-}
-
-EMOTION_TAG_INSTRUCTION = """At the beginning of every assistant response, output exactly one emotion tag:
-[emotion:neutral], [emotion:happy], [emotion:sad], [emotion:angry], [emotion:surprised], or [emotion:confused].
-After the tag, write the normal response text.
-Do not output multiple emotion tags."""
+from config.prompt_builder import build_final_system_instruction
 
 
 def create_log_file() -> Path:
@@ -52,30 +43,7 @@ async def initialize_components(config) -> dict:
     use_stt = config.input_voice_enabled
     use_tts = config.output_voice_enabled
 
-    base_system_prompt = config.system_prompt.strip()
-    output_language_name = LANGUAGE_NAMES.get(
-        config.output_language_code, "English"
-    )
-
-    language_instruction = (
-        f"You MUST write your entire response in {output_language_name}. "
-        f"All explanations, headings, bullet points, and sentences must be in "
-        f"{output_language_name}. "
-        f"You are NOT allowed to output any other language. "
-        f"If you generate content in another language, you must immediately rewrite it in "
-        f"{output_language_name}. "
-        f"Keep only code, commands, file paths, URLs, and proper nouns unchanged."
-    )
-
-    instruction_parts = [language_instruction]
-
-    if config.emotion_enabled:
-        instruction_parts.append(EMOTION_TAG_INSTRUCTION)
-
-    if base_system_prompt:
-        instruction_parts.append(base_system_prompt)
-
-    system_instruction = "\n\n".join(instruction_parts)
+    system_instruction = build_final_system_instruction(config)
 
     llm = build_llm(system_instruction)
     log_file = create_log_file()

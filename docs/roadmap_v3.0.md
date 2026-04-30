@@ -372,6 +372,21 @@ Planned direction:
 
 ---
 
+### Day7 - Voice Output Policy Prompt Boundary
+
+Goal:
+Prepare prompt construction so TTS-enabled sessions can receive voice-friendly output guidance without mixing it into character prompts.
+
+Planned direction:
+
+- Add a small prompt-building boundary for final system instruction layers.
+- Keep output language instruction separate from character prompt.
+- Add voice output policy only when voice/TTS output is active.
+- Keep text-only sessions unchanged by default.
+- Avoid provider-specific pronunciation handling in this layer.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.

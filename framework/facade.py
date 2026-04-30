@@ -5,15 +5,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generator
 
 from llm.base import BaseLLM
+from config.prompt_builder import build_final_system_instruction
 
 if TYPE_CHECKING:
     from config.loader import RuntimeConfig
 
-
-LANGUAGE_NAMES = {
-    "ja": "Japanese",
-    "en": "English",
-}
 
 DEFAULT_TEXT_CHAT_PRESET = "text_chat"
 
@@ -23,11 +19,6 @@ PROVIDER_ALIASES = {
     "gemini": "google",
     "grok": "xai",
 }
-
-EMOTION_TAG_INSTRUCTION = """At the beginning of every assistant response, output exactly one emotion tag:
-[emotion:neutral], [emotion:happy], [emotion:sad], [emotion:angry], [emotion:surprised], or [emotion:confused].
-After the tag, write the normal response text.
-Do not output multiple emotion tags."""
 
 
 class FacadeError(Exception):
@@ -205,32 +196,8 @@ def _load_facade_config(
 
 
 def _build_system_instruction(config: "RuntimeConfig") -> str:
-    """Build the same language/system instruction used by the runtime layer."""
-    base_system_prompt = config.system_prompt.strip()
-    output_language_name = LANGUAGE_NAMES.get(
-        config.output_language_code,
-        "English",
-    )
-
-    language_instruction = (
-        f"You MUST write your entire response in {output_language_name}. "
-        f"All explanations, headings, bullet points, and sentences must be in "
-        f"{output_language_name}. "
-        f"You are NOT allowed to output any other language. "
-        f"If you generate content in another language, you must immediately rewrite it in "
-        f"{output_language_name}. "
-        f"Keep only code, commands, file paths, URLs, and proper nouns unchanged."
-    )
-
-    instruction_parts = [language_instruction]
-
-    if config.emotion_enabled:
-        instruction_parts.append(EMOTION_TAG_INSTRUCTION)
-
-    if base_system_prompt:
-        instruction_parts.append(base_system_prompt)
-
-    return "\n\n".join(instruction_parts)
+    """Build the same final system instruction used by the runtime layer."""
+    return build_final_system_instruction(config)
 
 
 def _build_catalog_llm(llm_name: str, system_instruction: str) -> BaseLLM:
