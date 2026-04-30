@@ -158,6 +158,15 @@ except FacadeError as e:
     print(f"Framework integration error: {e}")
 ```
 
+For an offline-safe error handling example, run:
+
+```powershell
+python examples/app_error_handling.py
+```
+
+This intentionally demonstrates `FacadeConfigError` and `FacadeProviderError`
+without calling an external LLM API.
+
 The public facade is intentionally text-only for now.
 
 Supported:
@@ -196,6 +205,7 @@ For more details, see:
 - `docs/app_integration_contract.md`
 - `examples/public_text_chat.py`
 - `examples/minimal_app_text_chat.py`
+- `examples/app_error_handling.py`
 
 ---
 
@@ -814,6 +824,27 @@ For now:
 - STT runtime use is centered around `STTEngine.listen()`
 - TTS runtime use is centered around `VoiceEngine.speak()`, `flush()`, `is_speaking_active`, and `stop_immediately()`
 - full STT / TTS provider abstraction is left for a future milestone
+
+---
+
+## v2.6 App Integration Examples Notes
+
+v2.6.0 focuses on small, copy-friendly examples for external app integration.
+
+The first example is `examples/app_error_handling.py`, which shows how apps can
+catch public facade errors without depending on internal runtime modules.
+
+Offline-safe check:
+
+```powershell
+python examples/app_error_handling.py
+```
+
+Optional live check:
+
+```powershell
+python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini
+```
 
 ---
 

@@ -179,20 +179,39 @@ def check_session_info_model() -> None:
     print("[OK] TextChatSessionInfo exposes stable public session metadata")
 
 
-def check_minimal_app_example_import() -> None:
-    # The app integration example should be importable without creating an LLM
-    # client or loading the full runtime/audio/VTS stack.
+def _load_example_module(filename: str, module_name: str):
+    """Import an example file by path without running it as a script."""
     import importlib.util
 
-    example_path = PROJECT_ROOT / "examples" / "minimal_app_text_chat.py"
-    spec = importlib.util.spec_from_file_location(
-        "minimal_app_text_chat_smoke",
-        example_path,
-    )
+    example_path = PROJECT_ROOT / "examples" / filename
+    spec = importlib.util.spec_from_file_location(module_name, example_path)
     _assert(spec is not None and spec.loader is not None, "Could not load example spec")
 
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    return module
+
+
+def _assert_no_forbidden_runtime_imports(context: str) -> None:
+    imported_forbidden_modules = [
+        module_name
+        for module_name in FORBIDDEN_IMPORTS_AFTER_FRAMEWORK_IMPORT
+        if module_name in sys.modules
+    ]
+    _assert(
+        not imported_forbidden_modules,
+        f"{context} should not load runtime/audio/VTS modules: "
+        f"{imported_forbidden_modules}",
+    )
+
+
+def check_minimal_app_example_import() -> None:
+    # The app integration example should be importable without creating an LLM
+    # client or loading the full runtime/audio/VTS stack.
+    module = _load_example_module(
+        "minimal_app_text_chat.py",
+        "minimal_app_text_chat_smoke",
+    )
 
     _assert(
         hasattr(module, "MinimalTextChatApp"),
@@ -203,19 +222,29 @@ def check_minimal_app_example_import() -> None:
         "minimal app example should expose build_app",
     )
 
-    imported_forbidden_modules = [
-        module_name
-        for module_name in FORBIDDEN_IMPORTS_AFTER_FRAMEWORK_IMPORT
-        if module_name in sys.modules
-    ]
-    _assert(
-        not imported_forbidden_modules,
-        "minimal app example import should not load runtime/audio/VTS modules: "
-        f"{imported_forbidden_modules}",
-    )
-
+    _assert_no_forbidden_runtime_imports("minimal app example import")
     print("[OK] minimal app integration example is importable")
 
+
+def check_error_handling_example_import() -> None:
+    # The error handling example should also be importable without creating
+    # provider clients or loading the full runtime/audio/VTS stack.
+    module = _load_example_module(
+        "app_error_handling.py",
+        "app_error_handling_smoke",
+    )
+
+    _assert(
+        hasattr(module, "run_invalid_preset_demo"),
+        "error handling example should expose run_invalid_preset_demo",
+    )
+    _assert(
+        hasattr(module, "run_invalid_provider_demo"),
+        "error handling example should expose run_invalid_provider_demo",
+    )
+
+    _assert_no_forbidden_runtime_imports("error handling example import")
+    print("[OK] error handling example is importable")
 
 def check_live_text_turn(
     prompt: str,
@@ -266,6 +295,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_provider_model_resolution()
     check_session_info_model()
     check_minimal_app_example_import()
+    check_error_handling_example_import()
 
     if args.ask:
         check_live_text_turn(

@@ -177,6 +177,29 @@ Public error classes:
 - `FacadeConfigError`: raised when the selected preset or character is invalid for the text-only facade
 - `FacadeProviderError`: raised when provider/model resolution or provider creation fails
 
+### Error handling example
+
+For an app-oriented example of catching public facade errors, run:
+
+```powershell
+python examples/app_error_handling.py
+```
+
+The default mode is offline-safe. It intentionally demonstrates:
+
+- `FacadeConfigError` for a preset that is not compatible with the text facade
+- `FacadeProviderError` for an unsupported direct provider name
+
+You can also use the same example for an optional live turn after setting API keys:
+
+```powershell
+python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini
+```
+
+External apps should normally catch `FacadeError` at the framework boundary, and
+may catch `FacadeConfigError` or `FacadeProviderError` when they want more
+specific user-facing messages.
+
 ## Supported presets
 
 The text facade accepts text-only presets such as:
@@ -277,6 +300,12 @@ Minimal app-style integration example:
 
 ```powershell
 python examples/minimal_app_text_chat.py
+```
+
+Offline error handling example:
+
+```powershell
+python examples/app_error_handling.py
 ```
 
 Provider-selected app-style example:
