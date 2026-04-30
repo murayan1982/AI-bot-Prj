@@ -88,7 +88,8 @@ It should avoid becoming:
 - a full design document
 - an internal development log
 
-Version-specific release details should live in `docs/RELEASE_NOTES_vX.Y.Z.md`.
+Current release details should live in `docs/RELEASE_NOTES.md`.
+Historical release notes are preserved by Git tags and GitHub Releases.
 Detailed facade usage should live in `docs/public_facade.md`.
 External app boundary rules should live in `docs/app_integration_contract.md`.
 
@@ -118,10 +119,12 @@ Recommended documentation roles:
   - what is internal
   - why apps should not depend on `RuntimeConfig`
 
-- `docs/RELEASE_NOTES_vX.Y.Z.md`
+- `docs/RELEASE_NOTES.md`
   - version-specific changes
   - added / changed / fixed notes
   - verification commands used for that release
+  - Historical release details are not accumulated on `main`.
+  - Past release notes are preserved by Git tags and GitHub Releases.
 
 - internal release-operation notes
   - may exist during development

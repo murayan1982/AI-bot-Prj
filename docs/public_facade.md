@@ -408,5 +408,3 @@ python examples/app_error_handling.py --live --provider openai --model gpt-4o-mi
 python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
 python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
 ```
-
-For the full release checklist, see `docs/release_checklist_v2.6.0.md`.

@@ -695,13 +695,18 @@ Detailed documentation is split by responsibility:
 - `docs/app_integration_contract.md`
   - External app integration boundaries
 
-- `docs/RELEASE_NOTES_*.md`
-  - Version-specific release notes
+- `docs/RELEASE_NOTES.md`
+  - Current release notes
+
+- `docs/release_package_policy.md`
+  - Public release package include / exclude rules
 
 - `docs/roadmap_v3.0.md`
   - Advanced conversation runtime roadmap
 
-The README is intended to stay as the project entry point. Version-specific details should live in release notes instead of being accumulated here.
+The README is intended to stay as the project entry point. Current release details should live in `docs/RELEASE_NOTES.md` instead of being accumulated here.
+
+Historical release notes are preserved by Git tags and GitHub Releases.
 
 ---
 
