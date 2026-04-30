@@ -21,7 +21,8 @@ class VoiceEngine:
     - speak(text): append streaming text and enqueue speakable segments.
     - flush(): enqueue any remaining buffered text at the end of a turn.
     - is_speaking_active: report whether queued or active playback remains.
-    - stop_immediately(): stop current playback and clear queued segments.
+    - stop(): best-effort stop for queued or active playback.
+    - stop_immediately(): local playback cancellation implementation.
 
     This class currently owns provider-specific TTS generation and local audio
     playback. Provider abstraction and interruption behavior are intentionally
@@ -81,16 +82,29 @@ class VoiceEngine:
         """Return True while playback is active or queued audio remains."""
         return self.is_speaking or not self.msg_queue.empty()
 
+    def stop(self) -> None:
+        """
+        Best-effort stop for queued or active TTS playback.
+
+        This method is the framework-level interruption boundary. It delegates
+        to the current local playback cancellation behavior and is safe to call
+        even when nothing is playing.
+        """
+        self.stop_immediately()
+
     def stop_immediately(self) -> None:
         """
         Stop current playback and clear queued segments.
 
-        This is an interruption-facing boundary for future barge-in behavior.
-        v2.1 only keeps the boundary explicit; it does not implement full
-        interruption handling.
+        This is the current local playback cancellation implementation used by
+        the framework-level stop() boundary.
         """
         if self.current_process:
             self.current_process.kill()
+            self.current_process = None
+
+        self.text_buffer = ""
+
         while not self.msg_queue.empty():
             try:
                 self.msg_queue.get_nowait()

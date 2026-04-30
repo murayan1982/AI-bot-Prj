@@ -341,6 +341,21 @@ Implemented direction:
 
 ---
 
+### Day5 - TTS Stop Boundary
+
+Goal:
+Prepare TTS playback for future interruption and barge-in handling.
+
+Implemented direction:
+
+- Add a framework-level best-effort TTS stop boundary.
+- Allow the response pipeline to request TTS stop when interruption is observed.
+- Keep provider/player-specific hard cancellation as a later implementation detail.
+- Avoid failing the session when a provider does not support immediate stop.
+- Preserve the existing text-only flow and public text facade behavior.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.

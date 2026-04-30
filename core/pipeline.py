@@ -69,6 +69,7 @@ async def wait_for_tts_playback(
         async def _wait_loop():
             while tts_engine.is_speaking_active:
                 if runtime is not None and is_interruption_requested(runtime):
+                    _stop_tts_playback(tts_engine)
                     break
                 await asyncio.sleep(0.1)
 
@@ -138,6 +139,21 @@ def _queue_tts_chunk(
     return True
 
 
+def _stop_tts_playback(tts: VoiceEngine | None) -> None:
+    """Best-effort stop for active or queued TTS playback during interruption."""
+    if tts is None:
+        return
+
+    stop_fn = getattr(tts, "stop", None)
+    if stop_fn is None:
+        return
+
+    try:
+        stop_fn()
+    except Exception as e:
+        print(f"[TTS Warning] stop request failed. Continuing session. ({e})")
+
+
 async def process_ai_response(
     *,
     runtime: dict,
@@ -177,6 +193,7 @@ async def process_ai_response(
         for clean_chunk, emotions in llm.ask_stream(user_input):
             if is_interruption_requested(runtime):
                 interrupted = True
+                _stop_tts_playback(tts)
                 await set_runtime_state(runtime, ConversationState.INTERRUPTED)
                 break
 
@@ -224,6 +241,7 @@ async def process_ai_response(
 
             if speech_text and is_interruption_requested(runtime):
                 interrupted = True
+                _stop_tts_playback(tts)
                 await set_runtime_state(runtime, ConversationState.INTERRUPTED)
                 break
 
@@ -240,6 +258,7 @@ async def process_ai_response(
         if use_tts and tts is not None and not interrupted:
             if is_interruption_requested(runtime):
                 interrupted = True
+                _stop_tts_playback(tts)
                 await set_runtime_state(runtime, ConversationState.INTERRUPTED)
             else:
                 if tts_output_queued and tts.is_speaking_active:
