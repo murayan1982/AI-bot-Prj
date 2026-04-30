@@ -402,6 +402,21 @@ Implemented direction:
 
 ---
 
+### Day9 - Interruption Debug Trigger Route
+
+Goal:
+Add a small development-only route for manually triggering the interruption boundary.
+
+Implemented direction:
+
+- Add a manual `/interrupt` debug command.
+- Route the command through `request_interruption(runtime)`.
+- Transition through `interrupted` and return to `idle`.
+- Keep this separate from real concurrent barge-in behavior.
+- Add a lightweight command detection test.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.

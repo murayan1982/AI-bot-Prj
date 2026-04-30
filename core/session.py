@@ -7,8 +7,18 @@ from core.events import emit
 from core.state import (
     ConversationState,
     clear_interruption,
+    request_interruption,
     set_runtime_state,
 )
+
+
+INTERRUPT_COMMANDS = {"/interrupt"}
+
+
+def is_interrupt_command(user_input: str) -> bool:
+    """Return whether the input is a manual interruption debug command."""
+    return str(user_input).strip().lower() in INTERRUPT_COMMANDS
+
 
 class ChatSession:
     """Run the top-level conversation loop for one runtime session.
@@ -55,7 +65,18 @@ class ChatSession:
                 # Runtime event: on_user_input
                 await emit(self.runtime, "on_user_input", user_input)
 
-                if user_input.lower() in {"exit", "quit"}:
+                normalized_input = user_input.strip().lower()
+
+                # Development-only manual interruption trigger.
+                # This does not interrupt a concurrently running response yet; it
+                # verifies the runtime interruption request/state boundary from input.
+                if is_interrupt_command(user_input):
+                    await request_interruption(self.runtime)
+                    print("[Interrupted] Manual interruption requested.")
+                    await set_runtime_state(self.runtime, ConversationState.IDLE)
+                    continue
+
+                if normalized_input in {"exit", "quit"}:
                     await set_runtime_state(self.runtime, ConversationState.EXITING)
                     print("[Exiting] System shutting down...")
                     break
