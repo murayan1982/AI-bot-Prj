@@ -387,6 +387,21 @@ Planned direction:
 
 ---
 
+### Day8 - Runtime Boundary Regression Tests
+
+Goal:
+Add small regression tests for the new v3.0 runtime boundaries before expanding the feature set further.
+
+Implemented direction:
+
+- Add a minimal TTS stop boundary test without requiring real TTS provider initialization.
+- Add a minimal pipeline state flow test using a fake LLM.
+- Verify the response pipeline transitions from `idle` to `thinking` to `responding`.
+- Verify the TTS stop boundary clears active playback process, pending text buffer, and queued segments.
+- Keep tests lightweight and runnable without API calls.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.
