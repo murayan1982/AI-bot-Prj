@@ -586,6 +586,22 @@ A simple rule:
 
 ## Validation and smoke checks
 
+Compile check:
+
+```bash
+python -m compileall -q .
+```
+
+Runtime boundary checks:
+
+```bash
+python scripts/test_prompt_builder.py
+python scripts/test_interruption_state.py
+python scripts/test_tts_stop_boundary.py
+python scripts/test_runtime_state_flow.py
+python scripts/test_session_interrupt_command.py
+```
+
 LLM registry validation:
 
 ```bash
@@ -667,6 +683,11 @@ examples/
 
 scripts/
   smoke_public_facade.py
+  test_prompt_builder.py
+  test_interruption_state.py
+  test_tts_stop_boundary.py
+  test_runtime_state_flow.py
+  test_session_interrupt_command.py
 
 characters/
   default/

@@ -434,6 +434,21 @@ Implemented direction:
 
 ---
 
+### Day11 - v3.0.0 Release Notes and Verification Docs
+
+Goal:
+Prepare release-facing documentation for the v3.0.0 advanced runtime foundation.
+
+Implemented direction:
+
+- Add v3.0.0 draft notes to `docs/RELEASE_NOTES.md`.
+- Summarize runtime state, interruption, TTS stop, and voice output policy changes.
+- Document verification commands used for v3.0.0 development.
+- Update README validation checks with the new runtime boundary tests.
+- Keep full concurrent barge-in and provider-level cancellation documented as future v3.x work.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.
