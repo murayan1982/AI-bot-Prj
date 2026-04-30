@@ -4,7 +4,7 @@ from tts.voice_engine import VoiceEngine
 from core.events import emit
 from core.streaming import StreamingState, consume_stream_chunk
 import traceback
-
+from core.state import ConversationState, set_runtime_state
 
 async def ainput(prompt: str = "") -> str:
     return await asyncio.to_thread(input, prompt)
@@ -148,13 +148,14 @@ async def process_ai_response(
     """
     try:
         answer_prefix = "  AI: "
-
+        await set_runtime_state(runtime, ConversationState.THINKING)
         print("[Thinking] Generating response...")
 
         full_log_text = ""
         stream_state = StreamingState()
         emotion_triggered = False
         first_visible_chunk_received = False
+        response_started = False
         tts_output_queued = False
 
         # Thinking: consume the LLM stream one chunk at a time.
@@ -187,6 +188,10 @@ async def process_ai_response(
             display_text = chunk_result.display_text
             speech_text = chunk_result.speech_text
 
+            if display_text and not response_started:
+                await set_runtime_state(runtime, ConversationState.RESPONDING)
+                response_started = True
+
             # Display: show only clean text, not leading emotion tags.
             first_visible_chunk_received = await _print_and_emit_display_chunk(
                 runtime,
@@ -203,12 +208,14 @@ async def process_ai_response(
                 tts_output_queued = True
 
         if not first_visible_chunk_received:
+            await set_runtime_state(runtime, ConversationState.RESPONDING)
             print(answer_prefix, end="", flush=True)
 
         print()
 
         if use_tts and tts is not None:
             if tts_output_queued and tts.is_speaking_active:
+                await set_runtime_state(runtime, ConversationState.SPEAKING)
                 print("[Speaking] Playing TTS output...")
             await wait_for_tts_playback(tts)
 

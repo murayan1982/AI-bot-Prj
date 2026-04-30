@@ -12,6 +12,7 @@ from plugins.builtin import (
     ResponseLengthLoggerPlugin,
 )
 from core.events import create_hook_registry
+from core.state import RuntimeState
 
 LANGUAGE_NAMES = {
     "ja": "Japanese",
@@ -132,6 +133,7 @@ async def initialize_components(config) -> dict:
         "vts": vts,
         "stt": stt,
         "tts": tts,
+        "state": RuntimeState(),
         "hooks": create_hook_registry(),
     })
 

@@ -46,6 +46,7 @@ class BasePlugin(ABC):
     - "vts"
     - "stt"
     - "tts"
+    - "state"
     - "use_stt"
     - "use_tts"
     - "log_file"

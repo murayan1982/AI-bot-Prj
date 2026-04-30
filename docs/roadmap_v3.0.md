@@ -237,6 +237,7 @@ LLM / STT / TTS providers can be handled as framework-level configuration rather
   - idle
   - listening
   - thinking
+  - responding
   - speaking
   - interrupted
   - exiting
@@ -254,6 +255,42 @@ LLM / STT / TTS providers can be handled as framework-level configuration rather
 
 Goal:
 Conversation state becomes a clear runtime concept.
+
+### Day1 - Runtime Conversation State Foundation
+
+Goal:
+Introduce explicit runtime conversation state before heavier voice, interruption, and plugin expansion work.
+
+Implemented direction:
+
+- Add `ConversationState` and `RuntimeState`.
+- Add `on_state_change` runtime event.
+- Track high-level session states:
+  - `idle`
+  - `listening`
+  - `thinking`
+  - `responding`
+  - `speaking`
+  - `interrupted`
+  - `exiting`
+  - `error`
+- Keep `thinking`, `responding`, and `speaking` separate:
+  - `thinking`: waiting for LLM output
+  - `responding`: displaying assistant text response
+  - `speaking`: waiting for queued TTS playback
+- Keep final return to `idle` in the session loop instead of the pipeline.
+
+Expected text-only flow:
+
+```text
+idle -> listening -> thinking -> responding -> idle
+```
+
+Expected TTS flow:
+
+```text
+idle -> listening -> thinking -> responding -> speaking -> idle
+```
 
 ---
 

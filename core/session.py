@@ -4,7 +4,7 @@ import datetime
 from core.pipeline import process_ai_response, get_user_input
 from core.utils.logging import append_log
 from core.events import emit
-
+from core.state import ConversationState, set_runtime_state
 
 class ChatSession:
     """Run the top-level conversation loop for one runtime session.
@@ -34,7 +34,9 @@ class ChatSession:
 
         while True:
             try:
-                # waiting / listening: collect keyboard or STT input for one turn.
+                await set_runtime_state(self.runtime, ConversationState.LISTENING)
+
+                # listening: collect keyboard or STT input for one turn.
                 user_input = await get_user_input(
                     use_stt,
                     stt,
@@ -42,18 +44,21 @@ class ChatSession:
                 )
 
                 if not user_input:
+                    await set_runtime_state(self.runtime, ConversationState.IDLE)
                     continue
 
                 # Runtime event: on_user_input
                 await emit(self.runtime, "on_user_input", user_input)
 
                 if user_input.lower() in {"exit", "quit"}:
+                    await set_runtime_state(self.runtime, ConversationState.EXITING)
                     print("[Exiting] System shutting down...")
                     break
 
                 start_ts = datetime.datetime.now().strftime("%H:%M:%S")
 
-                # thinking / speaking: stream the LLM response and optional voice/VTS side effects.
+                # thinking / responding / speaking:
+                # stream the LLM response and optional voice/VTS side effects.
                 full_log_text = await process_ai_response(
                     runtime=self.runtime,
                     llm=llm,
@@ -64,13 +69,17 @@ class ChatSession:
                 )
 
                 append_log(log_file, start_ts, user_input, full_log_text)
+                await set_runtime_state(self.runtime, ConversationState.IDLE)
 
             except KeyboardInterrupt:
+                await set_runtime_state(self.runtime, ConversationState.EXITING)
                 print("\n[Exiting] Keyboard interrupt received.")
                 break
 
             except Exception as e:
+                await set_runtime_state(self.runtime, ConversationState.ERROR)
                 # Runtime event: on_error
                 await emit(self.runtime, "on_error", e)
                 print(f"\n[Main Error] {e}")
                 await asyncio.sleep(1)
+                await set_runtime_state(self.runtime, ConversationState.IDLE)
