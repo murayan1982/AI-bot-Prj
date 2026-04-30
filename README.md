@@ -817,6 +817,40 @@ For now:
 
 ---
 
+## v2.5 App Integration Readiness Notes
+
+v2.5.0 focuses on making the public text facade easier to inspect from external applications.
+
+The main focus is public session metadata:
+
+- `TextChatSession.info` exposes stable app-safe metadata
+- `TextChatSessionInfo` is the public info model for text chat sessions
+- default route mode hides internal provider/fallback details
+- direct provider mode exposes the resolved provider/model pair
+- external apps can inspect session capability flags such as `supports_streaming`, `supports_reset`, `supports_voice`, and `supports_vts`
+- `RuntimeConfig` remains internal and should not be used as an app integration contract
+
+Example:
+
+```python
+from framework import create_text_chat_session
+
+session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+
+print(session.info)
+print(session.ask("Hello. Please answer briefly."))
+```
+
+Recommended integration docs:
+
+- `docs/public_facade.md`
+- `docs/app_integration_contract.md`
+- `examples/minimal_app_text_chat.py`
+
+Voice, TTS, Live2D / VTube Studio control, and the full runtime loop are still outside the public text facade scope.
+
+---
+
 ## v2.4 Public Facade Integration Notes
 
 v2.4.0 focuses on making the public text facade easier to embed in external applications.

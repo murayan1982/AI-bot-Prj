@@ -51,6 +51,10 @@ resolved provider/model pair and `route_name` is `None`.
 
 ## Verification
 
+Release checklist:
+
+- `docs/release_checklist_v2.5.0.md`
+
 Recommended release checks:
 
 ```powershell
@@ -66,6 +70,15 @@ Optional direct provider smoke check:
 ```powershell
 python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
 ```
+
+## Documentation
+
+Updated docs:
+
+- `README.md`
+- `docs/public_facade.md`
+- `docs/app_integration_contract.md`
+- `docs/release_checklist_v2.5.0.md`
 
 ## Future note
 
