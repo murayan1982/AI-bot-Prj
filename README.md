@@ -167,6 +167,14 @@ python examples/app_error_handling.py
 This intentionally demonstrates `FacadeConfigError` and `FacadeProviderError`
 without calling an external LLM API.
 
+For a simple streaming example, run after setting provider API keys:
+
+```powershell
+python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
+```
+
+The streaming example uses `session.ask_stream(...)` and prints chunks as they arrive.
+
 The public facade is intentionally text-only for now.
 
 Supported:
@@ -206,6 +214,7 @@ For more details, see:
 - `examples/public_text_chat.py`
 - `examples/minimal_app_text_chat.py`
 - `examples/app_error_handling.py`
+- `examples/app_streaming_text_chat.py`
 
 ---
 
@@ -834,6 +843,9 @@ v2.6.0 focuses on small, copy-friendly examples for external app integration.
 The first example is `examples/app_error_handling.py`, which shows how apps can
 catch public facade errors without depending on internal runtime modules.
 
+The second example is `examples/app_streaming_text_chat.py`, which shows how apps can
+stream response chunks through `session.ask_stream(...)`.
+
 Offline-safe check:
 
 ```powershell
@@ -844,6 +856,12 @@ Optional live check:
 
 ```powershell
 python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini
+```
+
+Streaming live check:
+
+```powershell
+python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
 ```
 
 ---

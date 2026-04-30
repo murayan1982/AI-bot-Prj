@@ -143,6 +143,15 @@ for chunk in session.ask_stream("Hello. Please answer briefly."):
 
 This is a minimal streaming facade. Provider-specific emotion metadata is intentionally hidden from the public text API for now.
 
+For an app-oriented streaming example, run:
+
+```powershell
+python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
+```
+
+The example prints chunks as they arrive and keeps the app code limited to public
+`framework` imports.
+
 ### `TextChatSession.reset()`
 
 Resets provider-owned conversation state when the underlying provider supports it.
@@ -176,6 +185,27 @@ Public error classes:
 - `FacadeError`: base exception for public facade integration errors
 - `FacadeConfigError`: raised when the selected preset or character is invalid for the text-only facade
 - `FacadeProviderError`: raised when provider/model resolution or provider creation fails
+
+### Streaming example
+
+Use this example when you want to see the simplest app-style streaming loop:
+
+```powershell
+python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini
+```
+
+It demonstrates this shape:
+
+```python
+from framework import FacadeError, create_text_chat_session
+
+try:
+    session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+    for chunk in session.ask_stream("Hello. Please answer briefly."):
+        print(chunk, end="", flush=True)
+except FacadeError as e:
+    print(f"Framework integration error: {e}")
+```
 
 ### Error handling example
 

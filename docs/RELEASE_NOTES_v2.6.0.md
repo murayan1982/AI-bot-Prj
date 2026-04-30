@@ -8,17 +8,19 @@ from external applications.
 ## Added
 
 - Added `examples/app_error_handling.py`.
+- Added `examples/app_streaming_text_chat.py`.
 - Added offline-safe examples for catching:
   - `FacadeConfigError`
   - `FacadeProviderError`
 - Added optional live mode to the error handling example:
   - `python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini`
 - Added smoke import coverage for the new error handling example.
+- Added smoke import coverage for the new streaming example.
 
 ## Changed
 
-- Updated `docs/public_facade.md` with an app-level error handling example.
-- Updated README with the new error handling example.
+- Updated `docs/public_facade.md` with app-level error handling and streaming examples.
+- Updated README with the new error handling and streaming examples.
 - Kept the example boundary focused on public `framework` imports.
 
 ## Design notes
@@ -32,6 +34,11 @@ API keys are configured.
 External apps may catch `FacadeError` as the generic framework integration
 boundary, or catch `FacadeConfigError` / `FacadeProviderError` when more specific
 user-facing messages are useful.
+
+`examples/app_streaming_text_chat.py` demonstrates the minimal streaming shape
+for application code that wants to render chunks as they arrive. It uses
+`session.ask_stream(...)` and keeps provider-specific metadata hidden behind the
+public text facade.
 
 ## Verification
 
@@ -50,4 +57,5 @@ Optional live checks:
 ```powershell
 python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
 python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
+python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
 ```
