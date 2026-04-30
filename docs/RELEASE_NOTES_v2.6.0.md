@@ -47,6 +47,23 @@ that want to expose a "new conversation" or "clear chat" action. It calls
 `session.reset()` through the public facade and avoids depending on internal
 provider or runtime objects.
 
+## Release checklist
+
+See `docs/release_checklist_v2.6.0.md` for the full release checklist.
+
+## Final hygiene
+
+Before tagging, confirm that generated files and local secrets are not tracked:
+
+```powershell
+git status
+git diff --check
+git ls-files | findstr /i "__pycache__ .pyc"
+git ls-files | findstr /i ".env"
+```
+
+The `findstr` commands should not return tracked `__pycache__`, `.pyc`, or local `.env` files.
+
 ## Verification
 
 Recommended checks:

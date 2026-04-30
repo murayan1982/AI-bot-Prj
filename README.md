@@ -873,6 +873,12 @@ Reset live check:
 python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
 ```
 
+Release checklist:
+
+```text
+docs/release_checklist_v2.6.0.md
+```
+
 ---
 
 ## v2.5 App Integration Readiness Notes
