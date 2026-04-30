@@ -26,6 +26,7 @@ def main() -> None:
         character_name="default",
     )
 
+    print(f"Session info: {session.info}")
     response = session.ask("こんにちは。1文で短く返して。")
     print(response)
 

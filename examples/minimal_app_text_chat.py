@@ -28,7 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from framework import FacadeError, create_text_chat_session
+from framework import FacadeError, TextChatSessionInfo, create_text_chat_session
 
 
 class MinimalTextChatApp:
@@ -47,6 +47,11 @@ class MinimalTextChatApp:
             provider=provider,
             model=model,
         )
+
+    @property
+    def session_info(self) -> TextChatSessionInfo:
+        """Expose public framework session metadata to the application layer."""
+        return self._session.info
 
     def reply(self, user_text: str) -> str:
         """Return one assistant response for application-level user input."""
@@ -99,6 +104,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             provider=args.provider,
             model=args.model,
         )
+        print(f"Session info: {app.session_info}")
         print(app.reply(args.message))
     except FacadeError as e:
         print(f"[Facade Error] {e}", file=sys.stderr)

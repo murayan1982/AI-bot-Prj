@@ -5,6 +5,7 @@ from framework.facade import (
     FacadeError,
     FacadeProviderError,
     TextChatSession,
+    TextChatSessionInfo,
     create_text_chat_session,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     "FacadeError",
     "FacadeProviderError",
     "TextChatSession",
+    "TextChatSessionInfo",
     "create_text_chat_session",
 ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generator
 
 from llm.base import BaseLLM
@@ -41,6 +42,29 @@ class FacadeProviderError(FacadeError):
     """Raised when facade provider/model resolution or creation fails."""
 
 
+@dataclass(frozen=True)
+class TextChatSessionInfo:
+    """Public, stable session information for app integrations.
+
+    This model intentionally exposes only integration-safe metadata. Internal
+    RuntimeConfig details remain private so the runtime can evolve without
+    breaking application code that depends on the public facade.
+    """
+
+    preset: str
+    character_name: str
+    input_language_code: str
+    output_language_code: str
+    llm_mode: str
+    provider: str | None
+    model: str | None
+    route_name: str | None
+    supports_streaming: bool = True
+    supports_reset: bool = True
+    supports_voice: bool = False
+    supports_vts: bool = False
+
+
 class TextChatSession:
     """Public text-chat session facade.
 
@@ -49,8 +73,9 @@ class TextChatSession:
     It owns one LLM instance and exposes simple text-only turn methods.
     """
 
-    def __init__(self, llm: BaseLLM):
+    def __init__(self, llm: BaseLLM, info: TextChatSessionInfo):
         self._llm = llm
+        self.info = info
 
     def ask(self, text: str) -> str:
         """Send one text turn and return the full assistant response."""
@@ -277,42 +302,70 @@ def _resolve_provider_model(
 
 def _build_direct_provider_llm(
     provider: str,
-    model: str | None,
+    model: str,
     system_instruction: str,
 ) -> BaseLLM:
     """Build one explicitly selected provider/model for facade integration use."""
     from llm.factory import create_llm
 
-    resolved_provider, resolved_model = _resolve_provider_model(
-        provider=provider,
-        model=model,
-    )
-
     try:
         return create_llm(
-            provider=resolved_provider,
-            model=resolved_model,
+            provider=provider,
+            model=model,
             system_instruction=system_instruction,
         )
     except ValueError as e:
         raise FacadeProviderError(str(e)) from e
 
 
-def _build_text_chat_llm(
-    system_instruction: str,
+def _build_text_chat_info(
+    config: "RuntimeConfig",
     provider: str | None,
     model: str | None,
+) -> TextChatSessionInfo:
+    """Build the public session info model without exposing RuntimeConfig."""
+    if provider:
+        resolved_provider, resolved_model = _resolve_provider_model(
+            provider=provider,
+            model=model,
+        )
+        return TextChatSessionInfo(
+            preset=config.app_preset,
+            character_name=config.character_name,
+            input_language_code=config.input_language_code,
+            output_language_code=config.output_language_code,
+            llm_mode="direct_provider",
+            provider=resolved_provider,
+            model=resolved_model,
+            route_name=None,
+        )
+
+    return TextChatSessionInfo(
+        preset=config.app_preset,
+        character_name=config.character_name,
+        input_language_code=config.input_language_code,
+        output_language_code=config.output_language_code,
+        llm_mode="default_route",
+        provider=None,
+        model=None,
+        route_name="chat",
+    )
+
+
+def _build_text_chat_llm(
+    system_instruction: str,
+    info: TextChatSessionInfo,
 ) -> BaseLLM:
     """Build the public facade's text-chat LLM path.
 
-    When provider is omitted, the facade keeps the v2.3 behavior and uses the
-    chat route with fallback. When provider is provided, it builds exactly one
-    provider/model pair so external apps can choose their integration boundary.
+    In direct provider mode, the facade builds exactly one provider/model pair.
+    In default route mode, it keeps the chat route with fallback while hiding
+    internal route members from the public info model.
     """
-    if provider:
+    if info.provider and info.model:
         return _build_direct_provider_llm(
-            provider=provider,
-            model=model,
+            provider=info.provider,
+            model=info.model,
             system_instruction=system_instruction,
         )
 
@@ -324,7 +377,6 @@ def _build_text_chat_llm(
     fallback = _build_catalog_llm(route_config["fallback"], system_instruction)
 
     return FallbackLLM(primary, fallback)
-
 
 def create_text_chat_session(
     preset: str | None = None,
@@ -349,9 +401,13 @@ def create_text_chat_session(
         character_name=character_name,
     )
     system_instruction = _build_system_instruction(config)
-    llm = _build_text_chat_llm(
-        system_instruction=system_instruction,
+    info = _build_text_chat_info(
+        config=config,
         provider=provider,
         model=model,
     )
-    return TextChatSession(llm)
+    llm = _build_text_chat_llm(
+        system_instruction=system_instruction,
+        info=info,
+    )
+    return TextChatSession(llm, info)

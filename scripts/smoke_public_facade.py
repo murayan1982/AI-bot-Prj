@@ -26,6 +26,7 @@ EXPECTED_PUBLIC_API = [
     "FacadeError",
     "FacadeProviderError",
     "TextChatSession",
+    "TextChatSessionInfo",
     "create_text_chat_session",
 ]
 
@@ -133,6 +134,45 @@ def check_provider_model_resolution() -> None:
 
 
 
+def check_session_info_model() -> None:
+    # Session info is built from facade arguments and RuntimeConfig without
+    # creating provider clients or exposing the internal RuntimeConfig object.
+    from framework.facade import _build_text_chat_info, _load_facade_config
+
+    config = _load_facade_config(
+        preset="text_chat",
+        character_name="default",
+    )
+
+    default_info = _build_text_chat_info(
+        config=config,
+        provider=None,
+        model=None,
+    )
+    _assert(default_info.preset == "text_chat", "info should expose preset")
+    _assert(default_info.character_name == "default", "info should expose character")
+    _assert(default_info.llm_mode == "default_route", "default mode should use route")
+    _assert(default_info.route_name == "chat", "default route name should be chat")
+    _assert(default_info.provider is None, "default route should hide provider")
+    _assert(default_info.model is None, "default route should hide model")
+    _assert(default_info.supports_streaming, "text facade should support streaming")
+    _assert(default_info.supports_reset, "text facade should support reset")
+    _assert(not default_info.supports_voice, "text facade should not expose voice support")
+    _assert(not default_info.supports_vts, "text facade should not expose VTS support")
+
+    direct_info = _build_text_chat_info(
+        config=config,
+        provider="gemini",
+        model="custom-gemini-model",
+    )
+    _assert(direct_info.llm_mode == "direct_provider", "direct mode should be explicit")
+    _assert(direct_info.provider == "google", "provider aliases should be normalized")
+    _assert(direct_info.model == "custom-gemini-model", "model override should be exposed")
+    _assert(direct_info.route_name is None, "direct provider mode should not expose route")
+
+    print("[OK] TextChatSessionInfo exposes stable public session metadata")
+
+
 def check_minimal_app_example_import() -> None:
     # The app integration example should be importable without creating an LLM
     # client or loading the full runtime/audio/VTS stack.
@@ -202,6 +242,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_import_boundary()
     check_text_only_config_boundary()
     check_provider_model_resolution()
+    check_session_info_model()
     check_minimal_app_example_import()
 
     if args.ask:

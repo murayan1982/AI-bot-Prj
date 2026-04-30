@@ -14,6 +14,8 @@ session = create_text_chat_session(
     character_name="default",
 )
 
+print(session.info)
+
 response = session.ask("こんにちは。短く返して。")
 print(response)
 ```
@@ -81,6 +83,46 @@ Supported public provider names include:
 
 If `provider` is passed without `model`, the facade resolves the default model from `registry/llm.py`.
 
+
+### `TextChatSession.info`
+
+`TextChatSession.info` exposes stable, app-safe metadata about the created text
+chat session.
+
+```python
+session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+
+print(session.info.provider)
+print(session.info.model)
+print(session.info.output_language_code)
+```
+
+The info object is a `TextChatSessionInfo` instance.
+
+Fields:
+
+- `preset`: selected text-only preset name
+- `character_name`: selected character name
+- `input_language_code`: input language code
+- `output_language_code`: output language code
+- `llm_mode`: either `default_route` or `direct_provider`
+- `provider`: resolved provider in direct provider mode, otherwise `None`
+- `model`: resolved model in direct provider mode, otherwise `None`
+- `route_name`: `chat` in default route mode, otherwise `None`
+- `supports_streaming`: whether `ask_stream()` is part of this facade
+- `supports_reset`: whether `reset()` is part of this facade
+- `supports_voice`: always `False` for the text facade
+- `supports_vts`: always `False` for the text facade
+
+`TextChatSession.info` intentionally does not expose internal `RuntimeConfig`.
+
+In default route mode, internal primary/fallback provider details are not exposed.
+This keeps application code independent from the framework's internal routing and
+fallback configuration.
+
+In direct provider mode, `provider` and `model` expose the resolved provider/model
+pair requested by application code.
+
 ### `TextChatSession.ask(text)`
 
 Sends one text turn and returns the full assistant response as a string.
@@ -125,6 +167,10 @@ except FacadeError as e:
     print(f"Framework integration error: {e}")
 ```
 
+Public info classes:
+
+- `TextChatSessionInfo`: stable public session metadata for app integrations
+
 Public error classes:
 
 - `FacadeError`: base exception for public facade integration errors
@@ -163,6 +209,10 @@ from framework import FacadeError, create_text_chat_session
 class MinimalTextChatApp:
     def __init__(self):
         self._session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+
+    @property
+    def session_info(self):
+        return self._session.info
 
     def reply(self, user_text: str) -> str:
         return self._session.ask(user_text)
@@ -213,3 +263,20 @@ Provider-selected app-style example:
 ```powershell
 python examples/minimal_app_text_chat.py --provider openai --model gpt-4o-mini
 ```
+
+
+## Future notes
+
+### Voice-friendly output policy
+
+A future version may add a framework-level output policy for TTS-enabled
+sessions.
+
+The goal is to make LLM responses easier for speech synthesis to read aloud.
+
+This should be treated as output-quality guidance, not character personality.
+It should avoid unnecessary symbols, dense Markdown, tables, and excessive
+abbreviations while keeping code, commands, file paths, URLs, environment
+variable names, and proper nouns unchanged when necessary.
+
+The policy should be enabled only when audio/TTS output is active.
