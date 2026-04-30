@@ -79,6 +79,35 @@ The public `framework` package should expose:
 
 Importing `framework` should not start the runtime, connect to VTube Studio, initialize STT/TTS, or create provider clients.
 
+## Repository cleanliness checks
+
+Before building a distribution zip or creating a tag, confirm that only intended files are tracked:
+
+```powershell
+git status
+git diff --check
+git ls-files | findstr /i "__pycache__ .pyc"
+```
+
+Expected result for the last command:
+
+```text
+(no output)
+```
+
+Do not include generated cache files, local `.env` files, or temporary patch files in the release commit or distribution zip.
+
+## Distribution zip sanity check
+
+After creating the distribution zip, inspect the contents before uploading it.
+
+```powershell
+python -c "from pathlib import Path; from zipfile import ZipFile; zip_path=Path('dist/ai-character-framework_v2.5.0.zip'); names=ZipFile(zip_path).namelist(); bad=[n for n in names if '__pycache__' in n or n.endswith('.pyc') or n.endswith('/.env') or n == '.env']; assert not bad, bad[:10]; print(f'OK: {zip_path} contains {len(names)} entries')"
+```
+
+If your zip path is different, adjust `zip_path` before running the check.
+
+
 ## Release notes
 
 Use `docs/RELEASE_NOTES_v2.5.0.md` as the source for the GitHub release summary.

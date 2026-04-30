@@ -27,6 +27,8 @@ v2.5.0 improves the public text facade for external application integration.
 
 ## Changed
 
+- Added final release hygiene checks for repository cleanliness and distribution zip contents.
+
 - Updated public facade examples to show session info.
 - Updated minimal app integration example to expose app-level `session_info`.
 - Updated smoke checks for the public info model.
@@ -50,6 +52,12 @@ When the facade uses direct provider mode, `provider` and `model` expose the
 resolved provider/model pair and `route_name` is `None`.
 
 ## Verification
+
+Final release hygiene:
+
+- confirm no generated cache files are tracked
+- confirm no local `.env` file is included
+- inspect distribution zip contents before upload
 
 Release checklist:
 
