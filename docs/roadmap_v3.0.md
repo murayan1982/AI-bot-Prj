@@ -326,6 +326,21 @@ Implemented direction:
 
 ---
 
+### Day4 - Minimal Interruption State Tests
+
+Goal:
+Lock down the interruption helper behavior introduced by Day3.
+
+Implemented direction:
+
+- Add `scripts/test_interruption_state.py`.
+- Verify initial runtime state and interruption flag.
+- Verify `request_interruption()` transitions to `interrupted` and emits `on_state_change`.
+- Verify `clear_interruption()` clears only the interruption flag.
+- Keep state reset ownership in the session loop through explicit state transitions.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.
