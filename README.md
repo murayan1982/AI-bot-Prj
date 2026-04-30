@@ -120,6 +120,21 @@ session = create_text_chat_session(
 print(session.ask("こんにちは。1文で短く返して。"))
 ```
 
+As of v2.5.0, text chat sessions expose stable public metadata through `session.info`:
+
+```python
+session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+
+print(session.info.preset)
+print(session.info.character_name)
+print(session.info.provider)
+print(session.info.model)
+print(session.info.output_language_code)
+```
+
+`session.info` is intended for external apps that need to inspect the created session without depending on internal runtime objects.
+It intentionally does not expose `RuntimeConfig`.
+
 Supported public provider names include:
 
 - `openai`
@@ -163,12 +178,22 @@ Use `main.py` or the preset run scripts when you want the full runtime experienc
 Use `framework.create_text_chat_session()` when you want a lightweight framework API for text chat.
 Use `examples/minimal_app_text_chat.py` when you want to see the smallest app-style wrapper around the framework API.
 
+For app integration, the intended public contract is:
+
+- import from `framework`
+- create sessions with `create_text_chat_session()`
+- inspect public metadata through `session.info`
+- send user text through `ask()` or `ask_stream()`
+- catch `FacadeError` at the app boundary
+- avoid depending on `RuntimeConfig` or other internal runtime objects
+
 Importing `framework` should not start the runtime, connect to VTube Studio, initialize STT/TTS, or make network calls.
 Provider clients are created only when a session is explicitly created and used.
 
 For more details, see:
 
 - `docs/public_facade.md`
+- `docs/app_integration_contract.md`
 - `examples/public_text_chat.py`
 - `examples/minimal_app_text_chat.py`
 

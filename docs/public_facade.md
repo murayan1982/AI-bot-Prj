@@ -187,6 +187,21 @@ The text facade accepts text-only presets such as:
 
 Presets such as `voice_vts` and `text_vts` are rejected by the facade because they require runtime systems outside the text-only public API.
 
+## App integration contract
+
+For a more explicit boundary between external application code and framework internals, see:
+
+- `docs/app_integration_contract.md`
+
+The short version is:
+
+- import from `framework`
+- create sessions with `create_text_chat_session()`
+- inspect public metadata through `session.info`
+- send user text through `ask()` or `ask_stream()`
+- catch `FacadeError` at the app boundary
+- do not depend on `RuntimeConfig` or internal runtime objects
+
 ## Minimal app integration example
 
 Use this example when you want to see how an external application might wrap the framework API:

@@ -27,6 +27,9 @@ v2.5.0 improves the public text facade for external application integration.
 - Updated public facade examples to show session info.
 - Updated minimal app integration example to expose app-level `session_info`.
 - Updated smoke checks for the public info model.
+- Updated README with `session.info` usage and app integration boundary notes.
+- Added `docs/app_integration_contract.md` for external application integration guidance.
+- Linked the app integration contract from `docs/public_facade.md`.
 
 ## Design notes
 
