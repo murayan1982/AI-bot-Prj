@@ -43,12 +43,14 @@ This release focuses on:
 - Added prompt builder boundary for final system instruction layers.
 - Added voice output policy injection for TTS-enabled sessions.
 - Added advanced runtime documentation in `docs/advanced_runtime.md`.
+- Added lazy TTS settings validation so text-only startup does not depend on voice provider settings.
 - Added lightweight runtime boundary regression checks:
   - `scripts/test_prompt_builder.py`
   - `scripts/test_interruption_state.py`
   - `scripts/test_tts_stop_boundary.py`
   - `scripts/test_runtime_state_flow.py`
   - `scripts/test_session_interrupt_command.py`
+  - `scripts/test_tts_settings_lazy_validation.py`
 
 ### Changed
 
@@ -63,6 +65,7 @@ This release focuses on:
 - Kept public text facade behavior text-only and unchanged by default.
 - Clarified plugin state ownership: plugins may observe runtime state but should not mutate it directly.
 - Clarified that `/interrupt` is a development debug route, not full concurrent voice barge-in.
+- Delayed TTS voice configuration validation until TTS runtime initialization so `text_chat` remains the safest first-run preset.
 
 ### Documentation
 
@@ -82,6 +85,7 @@ python scripts/test_interruption_state.py
 python scripts/test_tts_stop_boundary.py
 python scripts/test_runtime_state_flow.py
 python scripts/test_session_interrupt_command.py
+python scripts/test_tts_settings_lazy_validation.py
 python scripts/smoke_public_facade.py
 python examples/app_error_handling.py
 python examples/public_text_chat.py

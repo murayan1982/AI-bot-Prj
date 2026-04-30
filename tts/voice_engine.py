@@ -7,7 +7,12 @@ import queue
 import re
 from pathlib import Path
 from elevenlabs.client import ElevenLabs
-from config.settings import ELEVENLABS_API_KEY, VOICE_ID, TTS_MODEL_ID
+from config.settings import (
+    ELEVENLABS_API_KEY,
+    VOICE_ID,
+    TTS_MODEL_ID,
+    require_tts_settings,
+)
 from config.calibration import (
     VOICE_STABILITY, SIMILARITY_BOOST, VOICE_STYLE, 
     VOICE_SPEED, POST_SPEECH_PAUSE
@@ -29,6 +34,7 @@ class VoiceEngine:
     handled as future runtime milestones.
     """
     def __init__(self, language_code: str = "ja"):
+        require_tts_settings()
         self.client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
         self.voice_id = VOICE_ID
         self.temp_dir = Path("temp")
