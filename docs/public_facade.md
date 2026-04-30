@@ -387,3 +387,41 @@ abbreviations while keeping code, commands, file paths, URLs, environment
 variable names, and proper nouns unchanged when necessary.
 
 The policy should be enabled only when audio/TTS output is active.
+
+## v4.0.0 public API inventory
+
+As of v4.0.0 development, the stable public import boundary is:
+
+```python
+from framework import (
+    FacadeConfigError,
+    FacadeError,
+    FacadeProviderError,
+    TextChatSession,
+    TextChatSessionInfo,
+    create_text_chat_session,
+)
+```
+
+The current app-facing text session supports:
+
+```python
+session.ask(text)
+session.ask_stream(text)
+session.reset()
+```
+
+These APIs are intended for external app integration.
+
+The following APIs are planned or being evaluated for v4.0.0:
+
+```python
+session.interrupt()
+session.close()
+session.on_event(callback)
+session.on_state_change(callback)
+```
+
+External apps should not import internal runtime modules such as `core`, provider implementations, STT/TTS clients, VTS clients, plugin manager internals, or runtime loop internals.
+
+Importing `framework` should remain lightweight and should not load runtime, audio, or VTS modules.

@@ -20,7 +20,8 @@ REQUIRED_FILES = [
     "docs/release_package_policy.md",
     "docs/public_facade.md",
     "docs/app_integration_contract.md",
-    "docs/roadmap_v3.0.md",
+    "docs/roadmap_feature_v4.0.0.md",
+    "docs/roadmap_feature_v5.0.0.md",
 ]
 
 REQUIRED_DIRS = [
@@ -66,7 +67,7 @@ PUBLIC_DOCS = [
     "docs/public_facade.md",
     "docs/app_integration_contract.md",
     "docs/RELEASE_NOTES.md",
-    "docs/roadmap_v3.0.md",
+    "docs/roadmap_feature_v4.0.0.md",
 ]
 
 
