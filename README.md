@@ -2,7 +2,9 @@
 
 A developer-oriented framework for building real-time AI character experiences with text, voice, and Live2D support.
 
-This project is a framework, not a finished consumer app. It is designed for developers, VTuber creators, and AI experimenters who want a practical foundation for AI character interaction systems.
+This project is a framework, not a finished consumer app.
+
+**Target audience:** Developers, VTuber creators, and AI experimenters who want a practical foundation for AI character interaction systems.
 
 ---
 
@@ -56,7 +58,7 @@ Recommended confirmation order:
 
 1. `text_chat` — confirm the basic text conversation flow
 2. `text_vts` — confirm text input with Live2D / VTS integration without voice
-3. `voice_vts` — try the full voice + Live2D experience
+3. `voice_vts` — try the full voice + Live2D integration preset
 
 ---
 
@@ -162,11 +164,13 @@ Example preset for bilingual-style testing.
 
 ## Preset matrix
 
+These presets demonstrate framework capabilities for development and testing. They are not standalone consumer apps.
+
 | Preset | Input | Output | Live2D | Emotion / VTS expression | Main purpose |
 | --- | --- | --- | --- | --- | --- |
 | `text_chat` | Keyboard | Text | Disabled | Disabled | Safest first-run and base LLM conversation check |
 | `text_vts` | Keyboard | Text | Enabled | Enabled | Check Live2D expression flow without voice input/output |
-| `voice_vts` | STT + text fallback | Text + TTS | Enabled | Enabled | Minimum full-stack voice + Live2D conversation check |
+| `voice_vts` | STT + text fallback | Text + TTS | Enabled | Enabled | Minimum full-stack voice + Live2D developer check |
 | `bilingual_ja_en` | Keyboard Japanese | Text English | Disabled | Disabled | Check input/output language separation |
 
 These presets are representative user-facing conversation presets, not a complete test matrix for every possible STT / TTS / Live2D combination.
@@ -383,6 +387,10 @@ print(session.ask("Hello."))
 - Public facade error classes for application boundary handling
 - Public text chat session metadata through `session.info`
 - App integration examples for error handling, streaming, and reset
+- Explicit runtime conversation state tracking
+- Plugin-facing state change events
+- Voice-friendly output policy for TTS-enabled sessions
+- Interruption-ready runtime boundaries for future barge-in work
 
 ---
 
@@ -788,4 +796,6 @@ This keeps the repository name short and practical while making the full project
 
 Please see `LICENSE.txt` for the full license terms.
 
-This project is intended to be shared and used as a framework, but redistribution, reuse, or resale of the framework itself should follow the license terms carefully.
+This project may be used as a component in larger applications, including commercial products and services, as long as the use follows the license terms.
+
+Redistribution, repackaging, or resale of the framework itself as a standalone product, starter kit, template, boilerplate, or similar package is restricted by the license.
