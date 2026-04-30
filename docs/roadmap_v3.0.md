@@ -356,6 +356,22 @@ Implemented direction:
 
 ---
 
+### Day6 - Voice-Friendly Output Policy Design
+
+Goal:
+Design a separate runtime output policy for TTS-enabled sessions without mixing voice readability concerns into character prompts.
+
+Planned direction:
+
+- Add `docs/voice_output_policy.md`.
+- Separate output language, character instruction, and voice output policy responsibilities.
+- Define when the policy should apply.
+- Keep text-only sessions unchanged by default.
+- Keep provider-specific pronunciation handling out of scope.
+- Prepare for a later prompt-builder implementation.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.
