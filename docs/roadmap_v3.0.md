@@ -417,6 +417,23 @@ Implemented direction:
 
 ---
 
+### Day10 - Advanced Runtime Behavior Documentation
+
+Goal:
+Document the v3.0 runtime foundation so the new state, interruption, TTS stop, and voice output policy behavior can be understood as one coherent feature set.
+
+Implemented direction:
+
+- Add `docs/advanced_runtime.md`.
+- Document runtime conversation states and expected state flows.
+- Document `on_state_change` as the plugin-facing state observation hook.
+- Document the interruption helper boundary.
+- Document the manual `/interrupt` debug command and its current limitation.
+- Document the best-effort TTS stop boundary.
+- Link to plugin event and voice output policy details.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.

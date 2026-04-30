@@ -645,6 +645,7 @@ plugins/
 
 config/
   loader.py
+  prompt_builder.py
   secrets.py
   defaults.py
   legacy.py
@@ -696,6 +697,15 @@ Detailed documentation is split by responsibility:
 
 - `docs/app_integration_contract.md`
   - External app integration boundaries
+
+- `docs/advanced_runtime.md`
+  - Runtime state, interruption boundaries, TTS stop behavior, and voice output policy
+
+- `docs/plugin_events.md`
+  - Runtime plugin event hooks such as `on_state_change`
+
+- `docs/voice_output_policy.md`
+  - TTS-friendly output policy design for voice-enabled sessions
 
 - `docs/RELEASE_NOTES.md`
   - Current release notes
