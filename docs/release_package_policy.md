@@ -122,3 +122,13 @@ python examples/app_error_handling.py
 python examples/public_text_chat.py
 python examples/minimal_app_text_chat.py
 ```
+
+## Local build workflow
+
+Release packages may be created with a local build script outside Git management.
+
+The local build script is treated as a maintainer-side tool and is not included in the repository or public release package.
+
+Generated release packages may be stored locally under a versioned `release/` directory.
+
+The `release/` directory is a local artifact archive and should not be committed to Git.
