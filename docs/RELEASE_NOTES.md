@@ -1,7 +1,3 @@
-# Release Notes
-
-Current release: v3.0.0
-
 ## v3.0.0 - Advanced Runtime Foundation
 
 ### Summary
