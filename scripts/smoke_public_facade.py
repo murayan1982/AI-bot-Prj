@@ -268,6 +268,27 @@ def check_streaming_example_import() -> None:
     print("[OK] streaming text chat example is importable")
 
 
+def check_reset_example_import() -> None:
+    # The reset example should be importable without creating provider clients
+    # or loading the full runtime/audio/VTS stack.
+    module = _load_example_module(
+        "app_reset_text_chat.py",
+        "app_reset_text_chat_smoke",
+    )
+
+    _assert(
+        hasattr(module, "ResettableTextChatApp"),
+        "reset example should expose ResettableTextChatApp",
+    )
+    _assert(
+        hasattr(module, "build_app"),
+        "reset example should expose build_app",
+    )
+
+    _assert_no_forbidden_runtime_imports("reset example import")
+    print("[OK] reset text chat example is importable")
+
+
 def check_live_text_turn(
     prompt: str,
     *,
@@ -319,6 +340,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_minimal_app_example_import()
     check_error_handling_example_import()
     check_streaming_example_import()
+    check_reset_example_import()
 
     if args.ask:
         check_live_text_turn(

@@ -207,6 +207,33 @@ except FacadeError as e:
     print(f"Framework integration error: {e}")
 ```
 
+### Reset example
+
+Use this example when your app needs a user-facing "new conversation" or
+"clear chat" action:
+
+```powershell
+python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
+```
+
+It demonstrates this shape:
+
+```python
+from framework import FacadeError, create_text_chat_session
+
+try:
+    session = create_text_chat_session(provider="openai", model="gpt-4o-mini")
+    print(session.ask("Hello. Please answer briefly."))
+    session.reset()
+    print(session.ask("Start a new short greeting."))
+except FacadeError as e:
+    print(f"Framework integration error: {e}")
+```
+
+`reset()` resets provider-owned conversation state when the underlying provider
+supports it. App code should call it through the public `TextChatSession`, not
+through internal provider or runtime objects.
+
 ### Error handling example
 
 For an app-oriented example of catching public facade errors, run:

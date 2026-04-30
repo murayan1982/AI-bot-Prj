@@ -846,6 +846,9 @@ catch public facade errors without depending on internal runtime modules.
 The second example is `examples/app_streaming_text_chat.py`, which shows how apps can
 stream response chunks through `session.ask_stream(...)`.
 
+The third example is `examples/app_reset_text_chat.py`, which shows how apps can
+call `session.reset()` through a small app wrapper.
+
 Offline-safe check:
 
 ```powershell
@@ -862,6 +865,12 @@ Streaming live check:
 
 ```powershell
 python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
+```
+
+Reset live check:
+
+```powershell
+python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
 ```
 
 ---

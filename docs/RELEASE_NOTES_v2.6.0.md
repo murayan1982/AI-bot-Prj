@@ -9,6 +9,7 @@ from external applications.
 
 - Added `examples/app_error_handling.py`.
 - Added `examples/app_streaming_text_chat.py`.
+- Added `examples/app_reset_text_chat.py`.
 - Added offline-safe examples for catching:
   - `FacadeConfigError`
   - `FacadeProviderError`
@@ -16,11 +17,12 @@ from external applications.
   - `python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini`
 - Added smoke import coverage for the new error handling example.
 - Added smoke import coverage for the new streaming example.
+- Added smoke import coverage for the new reset example.
 
 ## Changed
 
-- Updated `docs/public_facade.md` with app-level error handling and streaming examples.
-- Updated README with the new error handling and streaming examples.
+- Updated `docs/public_facade.md` with app-level error handling, streaming, and reset examples.
+- Updated README with the new error handling, streaming, and reset examples.
 - Kept the example boundary focused on public `framework` imports.
 
 ## Design notes
@@ -40,6 +42,11 @@ for application code that wants to render chunks as they arrive. It uses
 `session.ask_stream(...)` and keeps provider-specific metadata hidden behind the
 public text facade.
 
+`examples/app_reset_text_chat.py` demonstrates the minimal reset shape for apps
+that want to expose a "new conversation" or "clear chat" action. It calls
+`session.reset()` through the public facade and avoids depending on internal
+provider or runtime objects.
+
 ## Verification
 
 Recommended checks:
@@ -58,4 +65,5 @@ Optional live checks:
 python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
 python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
 python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
+python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
 ```
