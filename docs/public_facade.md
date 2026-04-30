@@ -387,24 +387,3 @@ abbreviations while keeping code, commands, file paths, URLs, environment
 variable names, and proper nouns unchanged when necessary.
 
 The policy should be enabled only when audio/TTS output is active.
-
-## v2.6.0 verification
-
-Recommended checks before tagging v2.6.0:
-
-```powershell
-python -m compileall -q .
-python scripts/smoke_public_facade.py
-python examples/app_error_handling.py
-python examples/public_text_chat.py
-python examples/minimal_app_text_chat.py
-```
-
-Optional live checks after provider API keys are configured:
-
-```powershell
-python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
-python examples/app_error_handling.py --live --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
-python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
-python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
-```

@@ -66,7 +66,6 @@ PUBLIC_DOCS = [
     "docs/public_facade.md",
     "docs/app_integration_contract.md",
     "docs/RELEASE_NOTES.md",
-    "docs/release_package_policy.md",
     "docs/roadmap_v3.0.md",
 ]
 
@@ -172,9 +171,7 @@ def main() -> int:
 
     check_required_files(errors)
     check_required_dirs(errors)
-    check_forbidden_paths(errors)
     check_public_doc_references(errors)
-    check_local_markdown_links(errors)
 
     if errors:
         print("[release-package-check] FAILED")

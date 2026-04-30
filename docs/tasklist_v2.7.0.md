@@ -57,7 +57,9 @@ Recommended link:
 - [Release Notes](docs/RELEASE_NOTES.md)
 ```
 
-Avoid version-specific links from README:
+Avoid version-specific release notes links from README.
+
+README should link to the stable current-release notes path instead:
 
 ```markdown
 - [Release Notes](docs/RELEASE_NOTES.md)

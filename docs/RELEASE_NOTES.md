@@ -17,6 +17,11 @@ v2.7.0 focuses on:
 - preventing public docs from referencing internal release checklist files
 - preparing clearer release package rules
 
+### Added
+
+- Added `docs/release_package_policy.md` to define public release package include / exclude rules.
+- Added `scripts/check_release_package.py` for release documentation sanity checks.
+
 ### Changed
 
 - Updated documentation policy so `main` only keeps release notes for the current public version.
@@ -24,6 +29,7 @@ v2.7.0 focuses on:
 - Removed public documentation references to internal release checklist files.
 - Clarified that old release notes are preserved by Git tags and GitHub Releases.
 - Clarified that release checklist files are internal working files and should not be referenced by public docs.
+- Clarified that local build scripts and generated release archives are maintainer-side artifacts and are not Git-managed.
 - Updated v3.0 roadmap documentation to match the current release notes policy.
 
 ### Documentation policy
@@ -41,7 +47,7 @@ The current release notes should live at:
 docs/RELEASE_NOTES.md
 ```
 
-Version-specific release note files such as `RELEASE_NOTES_vX.Y.Z.md` should not be accumulated on `main` unless there is a specific reason.
+Version-specific release note files should not be accumulated on `main` unless there is a specific reason.
 
 ### Release checklist policy
 
@@ -62,6 +68,7 @@ Run the standard checks before tagging the release:
 
 ```powershell
 python -m compileall -q .
+python scripts/check_release_package.py
 python scripts/smoke_public_facade.py
 python examples/app_error_handling.py
 python examples/public_text_chat.py
