@@ -25,6 +25,7 @@ class RuntimeState:
     """Mutable conversation state for one active runtime session."""
 
     current: ConversationState = ConversationState.IDLE
+    interruption_requested: bool = False
 
     def set(self, state: ConversationState) -> ConversationState:
         self.current = state
@@ -46,3 +47,31 @@ async def set_runtime_state(
 
     state.set(new_state)
     await emit(runtime, "on_state_change", old_state, new_state)
+
+
+async def request_interruption(runtime: dict[str, Any]) -> None:
+    """Request interruption for the active runtime response."""
+    state = runtime.get("state")
+    if state is None:
+        return
+
+    state.interruption_requested = True
+    await set_runtime_state(runtime, ConversationState.INTERRUPTED)
+
+
+def clear_interruption(runtime: dict[str, Any]) -> None:
+    """Clear any pending interruption request."""
+    state = runtime.get("state")
+    if state is None:
+        return
+
+    state.interruption_requested = False
+
+
+def is_interruption_requested(runtime: dict[str, Any]) -> bool:
+    """Return whether interruption has been requested."""
+    state = runtime.get("state")
+    if state is None:
+        return False
+
+    return bool(state.interruption_requested)

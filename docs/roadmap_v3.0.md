@@ -310,6 +310,22 @@ Implemented:
 
 ---
 
+### Day3 - Interruption Boundary Foundation
+
+Goal:
+Prepare the runtime and response pipeline for future barge-in and interruption handling.
+
+Implemented direction:
+
+- Add an interruption request flag to `RuntimeState`.
+- Add helper functions for requesting, clearing, and checking interruption.
+- Clear pending interruption at the beginning of each user turn.
+- Add interruption checks around LLM streaming and TTS playback boundaries.
+- Transition to `interrupted` when an interruption request is observed.
+- Keep actual audio cancellation and automatic voice barge-in for later work.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.

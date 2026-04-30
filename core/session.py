@@ -4,7 +4,11 @@ import datetime
 from core.pipeline import process_ai_response, get_user_input
 from core.utils.logging import append_log
 from core.events import emit
-from core.state import ConversationState, set_runtime_state
+from core.state import (
+    ConversationState,
+    clear_interruption,
+    set_runtime_state,
+)
 
 class ChatSession:
     """Run the top-level conversation loop for one runtime session.
@@ -34,6 +38,7 @@ class ChatSession:
 
         while True:
             try:
+                clear_interruption(self.runtime)
                 await set_runtime_state(self.runtime, ConversationState.LISTENING)
 
                 # listening: collect keyboard or STT input for one turn.

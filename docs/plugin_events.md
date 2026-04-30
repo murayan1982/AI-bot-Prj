@@ -45,7 +45,7 @@ Supported events:
 | `thinking` | The framework is waiting for LLM output. |
 | `responding` | The assistant text response is being displayed or streamed. |
 | `speaking` | The framework is waiting for queued TTS playback. |
-| `interrupted` | Reserved for future interruption and barge-in handling. |
+| `interrupted` | A response interruption has been requested or is being handled. |
 | `exiting` | The session is shutting down. |
 | `error` | The session is handling an error. |
 

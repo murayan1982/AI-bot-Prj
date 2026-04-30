@@ -1,10 +1,16 @@
 import asyncio
+import traceback
+
 from stt.stt_engine import STTEngine
 from tts.voice_engine import VoiceEngine
 from core.events import emit
 from core.streaming import StreamingState, consume_stream_chunk
-import traceback
-from core.state import ConversationState, set_runtime_state
+from core.state import (
+    ConversationState,
+    is_interruption_requested,
+    set_runtime_state,
+)
+
 
 async def ainput(prompt: str = "") -> str:
     return await asyncio.to_thread(input, prompt)
@@ -50,13 +56,20 @@ async def get_user_input(
     return ""
 
 
-async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) -> None:
+async def wait_for_tts_playback(
+    tts_engine: VoiceEngine,
+    timeout: float = 15.0,
+    *,
+    runtime: dict | None = None,
+) -> None:
     """Wait for queued TTS playback without blocking the session forever."""
     try:
         tts_engine.flush()
 
         async def _wait_loop():
             while tts_engine.is_speaking_active:
+                if runtime is not None and is_interruption_requested(runtime):
+                    break
                 await asyncio.sleep(0.1)
 
         await asyncio.wait_for(_wait_loop(), timeout=timeout)
@@ -67,6 +80,7 @@ async def wait_for_tts_playback(tts_engine: VoiceEngine, timeout: float = 15.0) 
         raise
     except Exception as e:
         print(f"[TTS Warning] playback wait failed. Continuing session. ({e})")
+
 
 async def _emit_emotion_once(
     runtime: dict,
@@ -140,11 +154,11 @@ async def process_ai_response(
     - Parse streaming chunks into display text, speech text, and emotion tags.
     - Print clean visible text for the user.
     - Queue clean speech text for optional TTS playback.
+    - Check interruption boundaries during LLM streaming and TTS playback waits.
     - Emit runtime events for plugins.
 
-    This helper does not own provider selection, conversation state transitions,
-    or interruption behavior. Those responsibilities are handled by surrounding
-    runtime layers or future milestones.
+    This helper does not own provider selection or final idle transitions.
+    Those responsibilities are handled by surrounding runtime/session layers.
     """
     try:
         answer_prefix = "  AI: "
@@ -157,9 +171,14 @@ async def process_ai_response(
         first_visible_chunk_received = False
         response_started = False
         tts_output_queued = False
+        interrupted = False
 
         # Thinking: consume the LLM stream one chunk at a time.
         for clean_chunk, emotions in llm.ask_stream(user_input):
+            if is_interruption_requested(runtime):
+                interrupted = True
+                await set_runtime_state(runtime, ConversationState.INTERRUPTED)
+                break
 
             if emotions:
                 full_log_text += "".join(f"[{emotion}]" for emotion in emotions)
@@ -203,21 +222,30 @@ async def process_ai_response(
             if display_text:
                 full_log_text += display_text
 
+            if speech_text and is_interruption_requested(runtime):
+                interrupted = True
+                await set_runtime_state(runtime, ConversationState.INTERRUPTED)
+                break
+
             # Speaking: send the same clean text to TTS when enabled.
             if _queue_tts_chunk(speech_text, use_tts=use_tts, tts=tts):
                 tts_output_queued = True
 
-        if not first_visible_chunk_received:
+        if not interrupted and not first_visible_chunk_received:
             await set_runtime_state(runtime, ConversationState.RESPONDING)
             print(answer_prefix, end="", flush=True)
 
         print()
 
-        if use_tts and tts is not None:
-            if tts_output_queued and tts.is_speaking_active:
-                await set_runtime_state(runtime, ConversationState.SPEAKING)
-                print("[Speaking] Playing TTS output...")
-            await wait_for_tts_playback(tts)
+        if use_tts and tts is not None and not interrupted:
+            if is_interruption_requested(runtime):
+                interrupted = True
+                await set_runtime_state(runtime, ConversationState.INTERRUPTED)
+            else:
+                if tts_output_queued and tts.is_speaking_active:
+                    await set_runtime_state(runtime, ConversationState.SPEAKING)
+                    print("[Speaking] Playing TTS output...")
+                await wait_for_tts_playback(tts, runtime=runtime)
 
         await emit(runtime, "on_llm_complete", full_log_text)
         return full_log_text
