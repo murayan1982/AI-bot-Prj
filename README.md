@@ -431,6 +431,8 @@ This framework includes lightweight extension points for runtime customization.
 
 This keeps the core runtime small while making it easier to add logging, integrations, or custom runtime behavior.
 
+For runtime event hooks such as `on_state_change`, see [Plugin Runtime Events](docs/plugin_events.md).
+
 ---
 
 ## Character customization

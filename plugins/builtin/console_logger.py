@@ -39,6 +39,7 @@ class ConsoleLoggerPlugin(BasePlugin):
         print(f"[Plugin:{self.name}] runtime stopped")
 
     def on_state_change(self, old_state: Any, new_state: Any) -> None:
+        """Log state transitions without mutating runtime state."""
         old_value = getattr(old_state, "value", str(old_state))
         new_value = getattr(new_state, "value", str(new_state))
         print(f"[Plugin:{self.name}] state={old_value} -> {new_value}")

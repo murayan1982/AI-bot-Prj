@@ -34,6 +34,11 @@ class BasePlugin(ABC):
     - on_stop(runtime):
         Called when the application/runtime is shutting down.
 
+    Runtime event hooks are registered through runtime["hooks"] during setup().
+    Plugins may observe state transitions with on_state_change(old_state, new_state),
+    but should treat runtime["state"] as read-only. State transitions are owned by
+    the framework runtime, session loop, and response pipeline.
+
     Runtime contract:
     Plugins may read from the shared runtime dictionary, but should treat it
     as framework-owned state. In the current framework, plugins may expect

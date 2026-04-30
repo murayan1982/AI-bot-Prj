@@ -294,6 +294,22 @@ idle -> listening -> thinking -> responding -> speaking -> idle
 
 ---
 
+### Day2 - State-aware Plugin Contract
+
+Goal:
+Document and stabilize the plugin-facing runtime event contract introduced by the runtime state foundation.
+
+Implemented:
+
+- Add `docs/plugin_events.md`.
+- Document lifecycle methods separately from runtime event hooks.
+- Document `on_state_change(old_state, new_state)`.
+- Document conversation state values and ownership.
+- Clarify that plugins may observe runtime state but should not mutate it directly.
+- Keep examples documentation-only for now to avoid expanding the public example surface too early.
+
+---
+
 ## v3.0 Workstream 4 - Voice-Friendly Output Policy Design
 
 This is a design topic before implementation.
