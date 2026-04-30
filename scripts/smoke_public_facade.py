@@ -7,6 +7,10 @@ Default mode is offline-safe and does not call an LLM provider API:
 Optional live LLM check, requiring API keys in .env:
 
     python scripts/smoke_public_facade.py --ask "こんにちは。短く返して"
+
+Optional live LLM check with direct provider mode:
+
+    python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
 """
 
 from __future__ import annotations
@@ -133,10 +137,10 @@ def check_provider_model_resolution() -> None:
     print("[OK] facade provider/model arguments resolve without creating clients")
 
 
-
 def check_session_info_model() -> None:
     # Session info is built from facade arguments and RuntimeConfig without
     # creating provider clients or exposing the internal RuntimeConfig object.
+    from framework import TextChatSessionInfo
     from framework.facade import _build_text_chat_info, _load_facade_config
 
     config = _load_facade_config(
@@ -149,6 +153,7 @@ def check_session_info_model() -> None:
         provider=None,
         model=None,
     )
+    _assert(isinstance(default_info, TextChatSessionInfo), "info should use public type")
     _assert(default_info.preset == "text_chat", "info should expose preset")
     _assert(default_info.character_name == "default", "info should expose character")
     _assert(default_info.llm_mode == "default_route", "default mode should use route")
@@ -165,6 +170,7 @@ def check_session_info_model() -> None:
         provider="gemini",
         model="custom-gemini-model",
     )
+    _assert(isinstance(direct_info, TextChatSessionInfo), "info should use public type")
     _assert(direct_info.llm_mode == "direct_provider", "direct mode should be explicit")
     _assert(direct_info.provider == "google", "provider aliases should be normalized")
     _assert(direct_info.model == "custom-gemini-model", "model override should be exposed")
@@ -210,17 +216,25 @@ def check_minimal_app_example_import() -> None:
 
     print("[OK] minimal app integration example is importable")
 
-def check_live_text_turn(prompt: str) -> None:
+
+def check_live_text_turn(
+    prompt: str,
+    *,
+    provider: str | None = None,
+    model: str | None = None,
+) -> None:
     from framework import create_text_chat_session
 
     session = create_text_chat_session(
         preset="text_chat",
         character_name="default",
+        provider=provider,
+        model=model,
     )
     response = session.ask(prompt)
 
     _assert(response.strip() != "", "LLM response was empty")
-    print("[OK] facade returned one live text response")
+    print(f"[OK] facade returned one live text response: {session.info}")
     print(response)
 
 
@@ -232,6 +246,14 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         "--ask",
         metavar="TEXT",
         help="Run an optional live LLM check with the provided prompt.",
+    )
+    parser.add_argument(
+        "--provider",
+        help="Optional provider override for the live LLM check.",
+    )
+    parser.add_argument(
+        "--model",
+        help="Optional model override for the live LLM check.",
     )
     return parser.parse_args(argv)
 
@@ -246,7 +268,11 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_minimal_app_example_import()
 
     if args.ask:
-        check_live_text_turn(args.ask)
+        check_live_text_turn(
+            args.ask,
+            provider=args.provider,
+            model=args.model,
+        )
     else:
         print("[SKIP] live LLM check skipped; pass --ask to enable it")
 

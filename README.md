@@ -188,7 +188,7 @@ For app integration, the intended public contract is:
 - avoid depending on `RuntimeConfig` or other internal runtime objects
 
 Importing `framework` should not start the runtime, connect to VTube Studio, initialize STT/TTS, or make network calls.
-Provider clients are created only when a session is explicitly created and used.
+Provider clients are created only when `create_text_chat_session()` is called. Importing `framework` remains side-effect-light.
 
 For more details, see:
 

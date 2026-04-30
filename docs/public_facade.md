@@ -255,10 +255,16 @@ Offline-safe check:
 python scripts/smoke_public_facade.py
 ```
 
-Optional live LLM check:
+Optional live LLM check using the default chat route:
 
 ```powershell
 python scripts/smoke_public_facade.py --ask "こんにちは。短く返して"
+```
+
+Optional live LLM check using direct provider mode:
+
+```powershell
+python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
 ```
 
 Minimal direct facade example:
