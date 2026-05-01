@@ -85,3 +85,41 @@ Runtime event hooks are observer hooks.
 
 They are useful for logging, metrics, UI updates, external integrations, and debugging.
 They should not be used to mutate core runtime state directly.
+
+## App-facing events vs internal plugin hooks
+
+AI Character Framework has two different event-like extension surfaces.
+
+### App-facing session events
+
+App-facing events are exposed through the public facade:
+
+```python
+session.on_event(callback)
+session.on_state_change(callback)
+```
+
+These are intended for external applications that use the framework as an SDK.
+
+App-facing events should:
+
+- be imported only through `framework`
+- avoid exposing internal runtime objects
+- remain stable for application developers
+- focus on session-level behavior such as response start, chunks, completion, reset, interrupt, and errors
+
+### Internal plugin hooks
+
+Internal plugin hooks are used by framework plugins and runtime extensions.
+
+They may depend on runtime dictionaries, lifecycle hooks, internal event names, or plugin manager behavior.
+
+Internal plugin hooks are not the recommended integration API for external apps.
+
+### Boundary rule
+
+External applications should prefer the public facade event APIs.
+
+Plugins may use internal hooks when they intentionally extend the framework runtime.
+
+The two systems may observe similar lifecycle moments, but they serve different audiences and should not be treated as the same API.
