@@ -140,8 +140,10 @@ def check_provider_model_resolution() -> None:
 def check_session_info_model() -> None:
     # Session info is built from facade arguments and RuntimeConfig without
     # creating provider clients or exposing the internal RuntimeConfig object.
-    from framework import TextChatSessionInfo
+    from framework import TextChatSessionInfo,TextChatSession
     from framework.facade import _build_text_chat_info, _load_facade_config
+
+    _assert(hasattr(TextChatSession, "interrupt"), "text session should expose interrupt()")
 
     config = _load_facade_config(
         preset="text_chat",
@@ -164,7 +166,7 @@ def check_session_info_model() -> None:
     _assert(default_info.session_type == "text_chat", "info should expose session type")
     _assert(default_info.supports_streaming, "text facade should support streaming")
     _assert(default_info.supports_reset, "text facade should support reset")
-    _assert(not default_info.supports_interrupt, "text facade should not expose interrupt support yet")
+    _assert(default_info.supports_interrupt, "text facade should expose interrupt boundary")
     _assert(not default_info.supports_events, "text facade should not expose event callbacks yet")
     _assert(not default_info.supports_close, "text facade should not expose close support yet")
     _assert(not default_info.supports_voice_input, "text facade should not expose voice input support")
@@ -185,6 +187,7 @@ def check_session_info_model() -> None:
     _assert(direct_info.session_type == "text_chat", "direct info should expose session type")
     _assert(direct_info.supports_streaming, "direct info should support streaming")
     _assert(direct_info.supports_reset, "direct info should support reset")
+    _assert(direct_info.supports_interrupt, "direct info should expose interrupt boundary")
     _assert(not direct_info.supports_voice_input, "direct info should not expose voice input support")
     _assert(not direct_info.supports_voice_output, "direct info should not expose voice output support")
     _assert(not direct_info.supports_live2d, "direct info should not expose Live2D support")

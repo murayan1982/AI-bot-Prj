@@ -267,3 +267,20 @@ create_character_session(...)
 ```
 
 External apps should not depend on `create_character_session()` until it is explicitly documented as stable.
+
+### `interrupt()`
+
+Requests interruption of the current app-facing session operation.
+
+In v4.0.0, this is a limited public boundary for app integration. Text sessions
+can stop yielding future response chunks after an interrupt request is observed,
+but this does not guarantee provider-level cancellation of an already-running
+LLM request.
+
+Expected app-facing behavior:
+
+- keeps the session object usable
+- accepts interruption requests through a stable public method
+- may stop streaming output at a chunk boundary
+- does not guarantee hard cancellation of active provider requests
+- does not imply TTS queue cancellation or realtime voice barge-in support

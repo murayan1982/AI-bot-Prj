@@ -54,7 +54,7 @@ class TextChatSessionInfo:
     session_type: str = "text_chat"
     supports_streaming: bool = True
     supports_reset: bool = True
-    supports_interrupt: bool = False
+    supports_interrupt: bool = True
     supports_events: bool = False
     supports_close: bool = False
     supports_voice_input: bool = False
@@ -73,6 +73,7 @@ class TextChatSession:
     def __init__(self, llm: BaseLLM, info: TextChatSessionInfo):
         self._llm = llm
         self.info = info
+        self._interrupt_requested = False
 
     def ask(self, text: str) -> str:
         """Send one text turn and return the full assistant response."""
@@ -80,7 +81,11 @@ class TextChatSession:
 
     def ask_stream(self, text: str) -> Generator[str, None, None]:
         """Send one text turn and yield assistant response chunks."""
+        self._interrupt_requested = False
+
         for chunk, _emotions in self._llm.ask_stream(text):
+            if self._interrupt_requested:
+                break
             if chunk:
                 yield chunk
 
@@ -88,6 +93,15 @@ class TextChatSession:
         """Reset provider-owned conversation state when supported."""
         self._llm.reset_session()
 
+    def interrupt(self) -> bool:
+        """Request interruption of the current or next app-facing operation.
+
+        v4.0.0 exposes this as a public app-facing boundary. Text sessions do not
+        provide provider-level hard cancellation yet, so this method records the
+        request and returns whether the session accepted it.
+        """
+        self._interrupt_requested = True
+        return True
 
 def _resolve_preset_name(preset: str | None) -> str:
     """Resolve facade preset priority: explicit argument -> .env -> default."""
