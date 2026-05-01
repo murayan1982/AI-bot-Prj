@@ -170,3 +170,100 @@ This should be treated as output-quality guidance, not character personality.
 The policy should avoid unnecessary symbols, dense Markdown, tables, and excessive abbreviations while preserving code, commands, file paths, URLs, environment variable names, and proper nouns when necessary.
 
 This should be enabled only when audio/TTS output is active.
+## v4.0.0 session API direction
+
+v4.0.0 keeps `create_text_chat_session()` as the stable public constructor for external app integration.
+
+```python
+from framework import create_text_chat_session
+
+session = create_text_chat_session(
+    provider="google",
+    model="gemini-1.5-flash",
+)
+```
+
+A broader constructor such as `create_character_session()` is intentionally not introduced in v4.0.0.
+
+Reason:
+
+- v4.0.0 focuses on the text app integration SDK boundary.
+- Voice, Live2D, realtime interruption, and always-on microphone behavior are not part of the v4.0.0 public session contract.
+- A generic character session constructor could imply broader runtime support than this version guarantees.
+- Future versions can add a broader constructor after the text session contract is stable.
+
+## Stable text session contract
+
+External apps may rely on the following text session operations:
+
+```python
+session.ask(text)
+session.ask_stream(text)
+session.reset()
+```
+
+These methods are part of the stable app-facing contract for text sessions.
+
+### `ask(text)`
+
+Sends one user message and returns one complete assistant response.
+
+Expected app-facing behavior:
+
+- accepts a non-empty text string
+- returns a response string
+- preserves conversation state within the session
+- raises a `FacadeError` subclass for framework-level integration errors
+
+### `ask_stream(text)`
+
+Sends one user message and yields response chunks.
+
+Expected app-facing behavior:
+
+- accepts a non-empty text string
+- yields text chunks
+- preserves conversation state within the session
+- raises a `FacadeError` subclass for framework-level integration errors
+
+### `reset()`
+
+Clears the app-facing conversation state for the current session.
+
+Expected app-facing behavior:
+
+- keeps the session object usable
+- clears previous conversation history/state
+- does not require the app to recreate the session
+- does not expose internal runtime objects
+
+## Planned or evaluated session operations
+
+The following operations are planned or being evaluated for v4.0.0:
+
+```python
+session.interrupt()
+session.close()
+session.on_event(callback)
+session.on_state_change(callback)
+```
+
+These operations should not imply full realtime voice behavior in v4.0.0.
+
+In v4.0.0, `interrupt()` may be implemented as an app-facing request boundary with limited behavior. Full provider-level LLM cancellation, TTS queue cancellation, and realtime voice barge-in belong to future versions.
+
+## Public constructor policy
+
+The public constructor for v4.0.0 is:
+
+```python
+create_text_chat_session(...)
+```
+
+The following constructor is a future candidate, not a v4.0.0 public API:
+
+```python
+create_character_session(...)
+```
+
+External apps should not depend on `create_character_session()` until it is explicitly documented as stable.
