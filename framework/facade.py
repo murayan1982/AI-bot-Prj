@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING, Callable, Generator
 
 from llm.base import BaseLLM
 from config.prompt_builder import build_final_system_instruction
@@ -55,11 +55,31 @@ class TextChatSessionInfo:
     supports_streaming: bool = True
     supports_reset: bool = True
     supports_interrupt: bool = True
-    supports_events: bool = False
+    supports_events: bool = True
     supports_close: bool = False
     supports_voice_input: bool = False
     supports_voice_output: bool = False
     supports_live2d: bool = False
+
+
+@dataclass(frozen=True)
+class TextChatSessionEvent:
+    """Public app-facing event emitted by a text chat session.
+
+    Events are intentionally small and app-safe. They do not expose provider,
+    runtime, plugin, STT/TTS, or VTS implementation objects.
+    """
+
+    type: str
+    data: dict[str, object]
+
+
+@dataclass(frozen=True)
+class TextChatStateChange:
+    """Public app-facing state transition emitted by a text chat session."""
+
+    old_state: str
+    new_state: str
 
 
 class TextChatSession:
@@ -74,6 +94,51 @@ class TextChatSession:
         self._llm = llm
         self.info = info
         self._interrupt_requested = False
+        self._state = "idle"
+        self._event_callbacks: list[Callable[[TextChatSessionEvent], None]] = []
+        self._state_change_callbacks: list[Callable[[TextChatStateChange], None]] = []
+
+    def on_event(
+        self,
+        callback: Callable[[TextChatSessionEvent], None],
+    ) -> Callable[[TextChatSessionEvent], None]:
+        """Register an app-facing event callback and return it.
+
+        This callback API is separate from internal plugin hooks. It is intended
+        for external apps that want to observe text session events without
+        importing runtime or plugin internals.
+        """
+        self._event_callbacks.append(callback)
+        return callback
+
+    def on_state_change(
+        self,
+        callback: Callable[[TextChatStateChange], None],
+    ) -> Callable[[TextChatStateChange], None]:
+        """Register an app-facing state change callback and return it."""
+        self._state_change_callbacks.append(callback)
+        return callback
+
+    def _emit_event(
+        self,
+        event_type: str,
+        data: dict[str, object] | None = None,
+    ) -> None:
+        """Emit one app-facing event to registered callbacks."""
+        event = TextChatSessionEvent(type=event_type, data=data or {})
+        for callback in list(self._event_callbacks):
+            callback(event)
+
+    def _set_state(self, new_state: str) -> None:
+        """Update the app-facing session state and notify callbacks."""
+        old_state = self._state
+        if old_state == new_state:
+            return
+
+        self._state = new_state
+        event = TextChatStateChange(old_state=old_state, new_state=new_state)
+        for callback in list(self._state_change_callbacks):
+            callback(event)
 
     def ask(self, text: str) -> str:
         """Send one text turn and return the full assistant response."""
@@ -82,16 +147,40 @@ class TextChatSession:
     def ask_stream(self, text: str) -> Generator[str, None, None]:
         """Send one text turn and yield assistant response chunks."""
         self._interrupt_requested = False
+        self._set_state("responding")
+        self._emit_event("response_started", {"text": text})
 
-        for chunk, _emotions in self._llm.ask_stream(text):
-            if self._interrupt_requested:
-                break
-            if chunk:
-                yield chunk
+        completed = False
+        try:
+            for chunk, _emotions in self._llm.ask_stream(text):
+                if self._interrupt_requested:
+                    self._set_state("interrupted")
+                    break
+                if chunk:
+                    self._emit_event("response_chunk", {"chunk": chunk})
+                    yield chunk
+            else:
+                completed = True
+                self._emit_event("response_completed")
+        except Exception as exc:
+            self._set_state("error")
+            self._emit_event(
+                "error",
+                {
+                    "error": str(exc),
+                    "error_type": type(exc).__name__,
+                },
+            )
+            raise
+        finally:
+            if completed or self._state in {"responding", "interrupted", "error"}:
+                self._set_state("idle")
 
     def reset(self) -> None:
         """Reset provider-owned conversation state when supported."""
         self._llm.reset_session()
+        self._emit_event("reset")
+        self._set_state("idle")
 
     def interrupt(self) -> bool:
         """Request interruption of the current or next app-facing operation.
@@ -101,7 +190,9 @@ class TextChatSession:
         request and returns whether the session accepted it.
         """
         self._interrupt_requested = True
+        self._emit_event("interrupt_requested")
         return True
+
 
 def _resolve_preset_name(preset: str | None) -> str:
     """Resolve facade preset priority: explicit argument -> .env -> default."""
@@ -364,6 +455,7 @@ def _build_text_chat_llm(
     fallback = _build_catalog_llm(route_config["fallback"], system_instruction)
 
     return FallbackLLM(primary, fallback)
+
 
 def create_text_chat_session(
     preset: str | None = None,

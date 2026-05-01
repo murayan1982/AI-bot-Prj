@@ -30,7 +30,9 @@ EXPECTED_PUBLIC_API = [
     "FacadeError",
     "FacadeProviderError",
     "TextChatSession",
+    "TextChatSessionEvent",
     "TextChatSessionInfo",
+    "TextChatStateChange",
     "create_text_chat_session",
 ]
 
@@ -140,10 +142,30 @@ def check_provider_model_resolution() -> None:
 def check_session_info_model() -> None:
     # Session info is built from facade arguments and RuntimeConfig without
     # creating provider clients or exposing the internal RuntimeConfig object.
-    from framework import TextChatSessionInfo,TextChatSession
+    from framework import (
+        TextChatSession,
+        TextChatSessionEvent,
+        TextChatSessionInfo,
+        TextChatStateChange,
+    )
     from framework.facade import _build_text_chat_info, _load_facade_config
 
     _assert(hasattr(TextChatSession, "interrupt"), "text session should expose interrupt()")
+    _assert(hasattr(TextChatSession, "on_event"), "text session should expose on_event()")
+    _assert(
+        hasattr(TextChatSession, "on_state_change"),
+        "text session should expose on_state_change()",
+    )
+
+    event = TextChatSessionEvent(type="reset", data={})
+    state_event = TextChatStateChange(old_state="idle", new_state="responding")
+    _assert(event.type == "reset", "event type should be public")
+    _assert(event.data == {}, "event data should be public")
+    _assert(state_event.old_state == "idle", "state change should expose old state")
+    _assert(
+        state_event.new_state == "responding",
+        "state change should expose new state",
+    )
 
     config = _load_facade_config(
         preset="text_chat",
@@ -167,7 +189,7 @@ def check_session_info_model() -> None:
     _assert(default_info.supports_streaming, "text facade should support streaming")
     _assert(default_info.supports_reset, "text facade should support reset")
     _assert(default_info.supports_interrupt, "text facade should expose interrupt boundary")
-    _assert(not default_info.supports_events, "text facade should not expose event callbacks yet")
+    _assert(default_info.supports_events, "text facade should expose event callbacks")
     _assert(not default_info.supports_close, "text facade should not expose close support yet")
     _assert(not default_info.supports_voice_input, "text facade should not expose voice input support")
     _assert(not default_info.supports_voice_output, "text facade should not expose voice output support")
@@ -188,6 +210,7 @@ def check_session_info_model() -> None:
     _assert(direct_info.supports_streaming, "direct info should support streaming")
     _assert(direct_info.supports_reset, "direct info should support reset")
     _assert(direct_info.supports_interrupt, "direct info should expose interrupt boundary")
+    _assert(direct_info.supports_events, "direct info should expose event callbacks")
     _assert(not direct_info.supports_voice_input, "direct info should not expose voice input support")
     _assert(not direct_info.supports_voice_output, "direct info should not expose voice output support")
     _assert(not direct_info.supports_live2d, "direct info should not expose Live2D support")
