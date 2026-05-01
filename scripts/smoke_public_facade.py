@@ -328,6 +328,23 @@ def check_reset_example_import() -> None:
     print("[OK] reset text chat example is importable")
 
 
+def check_session_info_example_import() -> None:
+    # The session info example should be importable without creating provider
+    # clients or loading the full runtime/audio/VTS stack.
+    module = _load_example_module(
+        "app_session_info.py",
+        "app_session_info_smoke",
+    )
+
+    _assert(
+        hasattr(module, "run_session_info_demo"),
+        "session info example should expose run_session_info_demo",
+    )
+
+    _assert_no_forbidden_runtime_imports("session info example import")
+    print("[OK] session info example is importable")
+
+
 def check_live_text_turn(
     prompt: str,
     *,
@@ -380,7 +397,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_error_handling_example_import()
     check_streaming_example_import()
     check_reset_example_import()
-
+    check_session_info_example_import()
     if args.ask:
         check_live_text_turn(
             args.ask,
