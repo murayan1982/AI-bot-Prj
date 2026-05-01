@@ -300,3 +300,67 @@ Expected app-facing behavior:
 - may stop streaming output at a chunk boundary
 - does not guarantee hard cancellation of active provider requests
 - does not imply TTS queue cancellation or realtime voice barge-in support
+
+## App-facing event callbacks
+
+v4.0.0 exposes minimal app-facing callbacks on text sessions:
+
+```python
+session.on_event(callback)
+session.on_state_change(callback)
+```
+
+These callbacks are intended for external application code.
+
+They are separate from internal plugin hooks and should not require apps to
+import `core`, `plugins`, runtime objects, provider implementations, STT/TTS, or
+VTS modules.
+
+### `on_event(callback)`
+
+Registers a callback for app-facing session events.
+
+```python
+def handle_event(event):
+    print(event.type)
+    print(event.data)
+
+session.on_event(handle_event)
+```
+
+Recommended initial event types:
+
+- `response_started`
+- `response_chunk`
+- `response_completed`
+- `reset`
+- `interrupt_requested`
+- `error`
+
+### `on_state_change(callback)`
+
+Registers a callback for app-facing session state changes.
+
+```python
+def handle_state_change(event):
+    print(event.old_state)
+    print(event.new_state)
+
+session.on_state_change(handle_state_change)
+```
+
+Recommended initial states:
+
+- `idle`
+- `responding`
+- `interrupted`
+- `error`
+
+### Boundary notes
+
+App-facing events are best-effort notifications for external apps.
+
+They do not expose internal runtime state, plugin hooks, provider objects, STT/TTS
+clients, VTS clients, or the plugin manager.
+
+In v4.0.0, these callbacks apply to the text facade only.
