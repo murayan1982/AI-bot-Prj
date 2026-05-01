@@ -362,6 +362,23 @@ def check_state_events_example_import() -> None:
     print("[OK] state/events example is importable")
 
 
+def check_interrupt_example_import() -> None:
+    # The interrupt example should be importable without creating provider
+    # clients or loading the full runtime/audio/VTS stack.
+    module = _load_example_module(
+        "app_interrupt_text_chat.py",
+        "app_interrupt_text_chat_smoke",
+    )
+
+    _assert(
+        hasattr(module, "run_interrupt_demo"),
+        "interrupt example should expose run_interrupt_demo",
+    )
+
+    _assert_no_forbidden_runtime_imports("interrupt example import")
+    print("[OK] interrupt example is importable")
+
+
 def check_live_text_turn(
     prompt: str,
     *,
@@ -416,6 +433,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     check_reset_example_import()
     check_session_info_example_import()
     check_state_events_example_import()
+    check_interrupt_example_import()
     if args.ask:
         check_live_text_turn(
             args.ask,
