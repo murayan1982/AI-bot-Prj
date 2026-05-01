@@ -188,6 +188,56 @@ TTS queue cancellation, or realtime voice barge-in.
 `session.info.supports_interrupt` means that this stable public method is
 available. It does not mean hard cancellation is supported.
 
+### `TextChatSession.on_event(callback)`
+
+Registers an app-facing event callback for the text session.
+
+```python
+def handle_event(event):
+    print(event.type)
+    print(event.data)
+
+session.on_event(handle_event)
+```
+
+App-facing events are intended for external application code. They are separate
+from internal plugin hooks and do not expose runtime, provider, STT/TTS, VTS, or
+plugin manager objects.
+
+Current text session events include:
+
+- `response_started`
+- `response_chunk`
+- `response_completed`
+- `reset`
+- `interrupt_requested`
+- `error`
+
+### `TextChatSession.on_state_change(callback)`
+
+Registers an app-facing state change callback for the text session.
+
+```python
+def handle_state_change(event):
+    print(event.old_state)
+    print(event.new_state)
+
+session.on_state_change(handle_state_change)
+```
+
+Current text session states include:
+
+- `idle`
+- `responding`
+- `interrupted`
+- `error`
+
+For a small app-facing example, run:
+
+```powershell
+python examples/app_state_events.py --provider openai --model gpt-4o-mini
+```
+
 ## Public errors
 
 The facade exposes public error classes so application code can catch framework integration errors at a clear boundary.
@@ -260,6 +310,37 @@ except FacadeError as e:
 supports it. App code should call it through the public `TextChatSession`, not
 through internal provider or runtime objects.
 
+### Session info example
+
+Use this example when your app needs to inspect public session metadata and
+capability flags:
+
+```powershell
+python examples/app_session_info.py --provider openai --model gpt-4o-mini
+```
+
+### App-facing state/events example
+
+Use this example when your app needs to observe text session events or state
+changes:
+
+```powershell
+python examples/app_state_events.py --provider openai --model gpt-4o-mini
+```
+
+### Interrupt example
+
+Use this example when your app needs to request interruption through the public
+text session boundary:
+
+```powershell
+python examples/app_interrupt_text_chat.py --provider openai --model gpt-4o-mini
+```
+
+`interrupt()` is a limited public boundary in v4.0.0. It does not guarantee
+provider-level hard cancellation, TTS queue cancellation, or realtime voice
+barge-in.
+
 ### Error handling example
 
 For an app-oriented example of catching public facade errors, run:
@@ -307,6 +388,7 @@ The short version is:
 - send user text through `ask()` or `ask_stream()`
 - reset a text conversation through `reset()`
 - request interruption through `interrupt()` when supported
+- observe app-facing events through `on_event()` and `on_state_change()`
 - catch `FacadeError` at the app boundary
 - do not depend on `RuntimeConfig` or internal runtime objects
 
@@ -399,6 +481,24 @@ Provider-selected app-style example:
 python examples/minimal_app_text_chat.py --provider openai --model gpt-4o-mini
 ```
 
+Session info example:
+
+```powershell
+python examples/app_session_info.py --provider openai --model gpt-4o-mini
+```
+
+App-facing state/events example:
+
+```powershell
+python examples/app_state_events.py --provider openai --model gpt-4o-mini
+```
+
+Interrupt boundary example:
+
+```powershell
+python examples/app_interrupt_text_chat.py --provider openai --model gpt-4o-mini
+```
+
 
 ## Future notes
 
@@ -438,6 +538,8 @@ session.ask(text)
 session.ask_stream(text)
 session.reset()
 session.interrupt()
+session.on_event(callback)
+session.on_state_change(callback)
 ```
 
 These APIs are intended for external app integration.
@@ -446,8 +548,6 @@ The following APIs are planned or being evaluated after the current v4.0.0 text 
 
 ```python
 session.close()
-session.on_event(callback)
-session.on_state_change(callback)
 ```
 
 External apps should not import internal runtime modules such as `core`, provider implementations, STT/TTS clients, VTS clients, plugin manager internals, or runtime loop internals.
