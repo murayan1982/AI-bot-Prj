@@ -200,6 +200,7 @@ External apps may rely on the following text session operations:
 session.ask(text)
 session.ask_stream(text)
 session.reset()
+session.interrupt()
 ```
 
 These methods are part of the stable app-facing contract for text sessions.
@@ -224,6 +225,7 @@ Expected app-facing behavior:
 - accepts a non-empty text string
 - yields text chunks
 - preserves conversation state within the session
+- may stop yielding future chunks after `interrupt()` is requested
 - raises a `FacadeError` subclass for framework-level integration errors
 
 ### `reset()`
@@ -237,20 +239,34 @@ Expected app-facing behavior:
 - does not require the app to recreate the session
 - does not expose internal runtime objects
 
+### `interrupt()`
+
+Requests interruption of the current app-facing text session operation.
+
+In v4.0.0, this is a limited public boundary for app integration.
+
+Text sessions can stop yielding future response chunks after an interrupt request is observed, but this does not guarantee provider-level cancellation of an already-running LLM request.
+
+Expected app-facing behavior:
+
+- keeps the session object usable
+- returns whether the interrupt request was accepted
+- may stop streaming output at a chunk boundary
+- does not guarantee hard cancellation of active provider requests
+- does not imply TTS queue cancellation
+- does not imply realtime voice barge-in support
+
 ## Planned or evaluated session operations
 
 The following operations are planned or being evaluated for v4.0.0:
 
 ```python
-session.interrupt()
 session.close()
 session.on_event(callback)
 session.on_state_change(callback)
 ```
 
 These operations should not imply full realtime voice behavior in v4.0.0.
-
-In v4.0.0, `interrupt()` may be implemented as an app-facing request boundary with limited behavior. Full provider-level LLM cancellation, TTS queue cancellation, and realtime voice barge-in belong to future versions.
 
 ## Public constructor policy
 

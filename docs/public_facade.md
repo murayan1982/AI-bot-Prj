@@ -109,10 +109,16 @@ Fields:
 - `provider`: resolved provider in direct provider mode, otherwise `None`
 - `model`: resolved model in direct provider mode, otherwise `None`
 - `route_name`: `chat` in default route mode, otherwise `None`
+- `api_version`: public facade API version
+- `session_type`: session type, currently `text_chat`
 - `supports_streaming`: whether `ask_stream()` is part of this facade
 - `supports_reset`: whether `reset()` is part of this facade
-- `supports_voice`: always `False` for the text facade
-- `supports_vts`: always `False` for the text facade
+- `supports_interrupt`: whether `interrupt()` is part of this facade
+- `supports_events`: whether app-facing event callbacks are part of this facade
+- `supports_close`: whether `close()` is part of this facade
+- `supports_voice_input`: whether voice input is part of this facade
+- `supports_voice_output`: whether voice output is part of this facade
+- `supports_live2d`: whether Live2D control is part of this facade
 
 `TextChatSession.info` intentionally does not expose internal `RuntimeConfig`.
 
@@ -161,6 +167,26 @@ session.reset()
 ```
 
 Stateless providers may treat this as a no-op.
+
+### `TextChatSession.interrupt()`
+
+Requests interruption of the current app-facing text session operation.
+
+```python
+accepted = session.interrupt()
+```
+
+In v4.0.0, `interrupt()` is a limited public boundary for app integration.
+
+It allows app code to request interruption through a stable public method. Text
+sessions may stop yielding future response chunks after the interrupt request is
+observed.
+
+This does not guarantee provider-level cancellation of an active LLM request,
+TTS queue cancellation, or realtime voice barge-in.
+
+`session.info.supports_interrupt` means that this stable public method is
+available. It does not mean hard cancellation is supported.
 
 ## Public errors
 
@@ -279,6 +305,8 @@ The short version is:
 - create sessions with `create_text_chat_session()`
 - inspect public metadata through `session.info`
 - send user text through `ask()` or `ask_stream()`
+- reset a text conversation through `reset()`
+- request interruption through `interrupt()` when supported
 - catch `FacadeError` at the app boundary
 - do not depend on `RuntimeConfig` or internal runtime objects
 
@@ -409,14 +437,14 @@ The current app-facing text session supports:
 session.ask(text)
 session.ask_stream(text)
 session.reset()
+session.interrupt()
 ```
 
 These APIs are intended for external app integration.
 
-The following APIs are planned or being evaluated for v4.0.0:
+The following APIs are planned or being evaluated after the current v4.0.0 text session boundary:
 
 ```python
-session.interrupt()
 session.close()
 session.on_event(callback)
 session.on_state_change(callback)
