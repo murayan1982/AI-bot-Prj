@@ -48,7 +48,7 @@ Plugins should treat runtime state as read-only.
 For plugin event details, see:
 
 ```text
-docs/plugin_events.md
+plugin_events.md
 ```
 
 ## Interruption Boundary
@@ -138,7 +138,7 @@ Text-only sessions do not receive the voice output policy by default.
 For details, see:
 
 ```text
-docs/voice_output_policy.md
+voice_output_policy.md
 ```
 
 ## Current Limitations

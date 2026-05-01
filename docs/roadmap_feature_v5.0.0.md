@@ -264,11 +264,11 @@ Do not expose internal runtime details just to make interruption controllable.
 
 Update or add:
 
-- `docs/roadmap_feature_v5.0.0.md`
-- `docs/advanced_runtime.md`
-- `docs/voice_output_policy.md`
-- `docs/public_facade.md` or app SDK docs if voice APIs become public
-- `docs/RELEASE_NOTES.md`
+- `roadmap_feature_v5.0.0.md`
+- `advanced_runtime.md`
+- `voice_output_policy.md`
+- `public_facade.md` or app SDK docs if voice APIs become public
+- `RELEASE_NOTES.md`
 
 Docs should clearly distinguish:
 

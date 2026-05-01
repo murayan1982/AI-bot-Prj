@@ -22,6 +22,7 @@ REQUIRED_FILES = [
     "docs/app_integration_contract.md",
     "docs/roadmap_feature_v4.0.0.md",
     "docs/roadmap_feature_v5.0.0.md",
+    "scripts/smoke_app_sdk.py",
 ]
 
 REQUIRED_DIRS = [
@@ -173,6 +174,7 @@ def main() -> int:
     check_required_files(errors)
     check_required_dirs(errors)
     check_public_doc_references(errors)
+    check_local_markdown_links(errors)
 
     if errors:
         print("[release-package-check] FAILED")

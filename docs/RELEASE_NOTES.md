@@ -28,17 +28,17 @@ This release focuses on:
   - `error`
 - Added `RuntimeState` as the mutable state object for one active runtime session.
 - Added `on_state_change(old_state, new_state)` runtime event for plugins.
-- Added state-aware plugin event documentation in `docs/plugin_events.md`.
+- Added state-aware plugin event documentation in `plugin_events.md`.
 - Added interruption helper boundary:
   - `request_interruption(runtime)`
   - `clear_interruption(runtime)`
   - `is_interruption_requested(runtime)`
 - Added a manual `/interrupt` debug command for verifying the interruption boundary.
 - Added best-effort TTS stop boundary through `VoiceEngine.stop()`.
-- Added voice-friendly output policy design in `docs/voice_output_policy.md`.
+- Added voice-friendly output policy design in `voice_output_policy.md`.
 - Added prompt builder boundary for final system instruction layers.
 - Added voice output policy injection for TTS-enabled sessions.
-- Added advanced runtime documentation in `docs/advanced_runtime.md`.
+- Added advanced runtime documentation in `advanced_runtime.md`.
 - Added lazy TTS settings validation so text-only startup does not depend on voice provider settings.
 - Added lightweight runtime boundary regression checks:
   - `scripts/test_prompt_builder.py`
@@ -65,8 +65,8 @@ This release focuses on:
 
 ### Documentation
 
-- Added `docs/advanced_runtime.md` for the v3.0 runtime foundation.
-- Added `docs/voice_output_policy.md` for TTS-friendly output policy design.
+- Added `advanced_runtime.md` for the v3.0 runtime foundation.
+- Added `voice_output_policy.md` for TTS-friendly output policy design.
 - Updated README validation checks to include the new runtime boundary tests.
 - Updated the v3.0 roadmap with the completed runtime foundation work.
 

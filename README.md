@@ -651,6 +651,12 @@ Public facade smoke check:
 python scripts/smoke_public_facade.py
 ```
 
+App SDK boundary smoke check:
+
+```bash
+python scripts/smoke_app_sdk.py
+```
+
 Live one-turn facade check:
 
 ```bash
@@ -733,6 +739,7 @@ examples/
 
 scripts/
   smoke_public_facade.py
+  smoke_app_sdk.py
   test_prompt_builder.py
   test_interruption_state.py
   test_tts_stop_boundary.py

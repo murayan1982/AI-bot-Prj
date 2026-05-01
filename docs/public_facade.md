@@ -378,7 +378,7 @@ Presets such as `voice_vts` and `text_vts` are rejected by the facade because th
 
 For a more explicit boundary between external application code and framework internals, see:
 
-- `docs/app_integration_contract.md`
+- `app_integration_contract.md`
 
 The short version is:
 

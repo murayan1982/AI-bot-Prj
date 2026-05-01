@@ -88,7 +88,7 @@ private notes
 Current release notes should use the stable path:
 
 ```text
-docs/RELEASE_NOTES.md
+RELEASE_NOTES.md
 ```
 
 Historical release notes are preserved by Git tags and GitHub Releases.
@@ -118,6 +118,7 @@ cache files are not included
 ```powershell
 python -m compileall -q .
 python scripts/smoke_public_facade.py
+python scripts/smoke_app_sdk.py
 python examples/app_error_handling.py
 python examples/public_text_chat.py
 python examples/minimal_app_text_chat.py

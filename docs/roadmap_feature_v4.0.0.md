@@ -199,11 +199,11 @@ Not necessary for v4.0.0:
 
 Update or add these docs:
 
-- `docs/roadmap_feature_v4.0.0.md`
-- `docs/public_facade.md`
-- `docs/app_integration_contract.md`
-- `docs/plugin_events.md`
-- `docs/RELEASE_NOTES.md`
+- `roadmap_feature_v4.0.0.md`
+- `public_facade.md`
+- `app_integration_contract.md`
+- `plugin_events.md`
+- `RELEASE_NOTES.md`
 
 README should link app developers toward the public facade docs instead of encouraging internal imports.
 
@@ -274,7 +274,7 @@ Acceptance:
 
 - Review `framework/facade.py`.
 - Review `framework/__init__.py` exports.
-- Review `docs/public_facade.md`.
+- Review `public_facade.md`.
 - Identify public vs internal responsibilities.
 
 Acceptance:
