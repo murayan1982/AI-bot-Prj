@@ -266,6 +266,8 @@ Supported:
 - public session metadata through `session.info`
 - streaming through `ask_stream()`
 - reset through `reset()`
+- limited interrupt boundary through `interrupt()`
+- app-facing events through `on_event()` and `on_state_change()`
 
 Not supported through this facade yet:
 
@@ -273,6 +275,8 @@ Not supported through this facade yet:
 - TTS output
 - Live2D / VTube Studio control
 - full runtime session loop
+- provider-level hard cancellation of active LLM requests
+- TTS queue cancellation or realtime voice barge-in
 
 Use `main.py` or the preset run scripts when you want the full runtime experience.
 
@@ -285,6 +289,9 @@ For more details, see:
 - `examples/app_error_handling.py`
 - `examples/app_streaming_text_chat.py`
 - `examples/app_reset_text_chat.py`
+- `examples/app_session_info.py`
+- `examples/app_state_events.py`
+- `examples/app_interrupt_text_chat.py`
 
 ---
 
@@ -330,11 +337,31 @@ python examples/app_error_handling.py --live --provider openai --model gpt-4o-mi
 python examples/app_streaming_text_chat.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
 ```
 
-### Reset/session info example
+### Reset example
 
 ```powershell
 python examples/app_reset_text_chat.py --provider openai --model gpt-4o-mini
 ```
+
+### Session info example
+
+```powershell
+python examples/app_session_info.py --provider openai --model gpt-4o-mini
+```
+
+### App-facing state/events example
+
+```powershell
+python examples/app_state_events.py --provider openai --model gpt-4o-mini --message "こんにちは。1文で短く返して。"
+```
+
+### Interrupt boundary example
+
+```powershell
+python examples/app_interrupt_text_chat.py --provider openai --model gpt-4o-mini
+```
+
+`interrupt()` is a limited public boundary in v4.0.0. It does not guarantee provider-level hard cancellation, TTS queue cancellation, or realtime voice barge-in.
 
 ---
 
@@ -386,7 +413,9 @@ print(session.ask("Hello."))
 - Facade-level provider/model selection for app integration
 - Public facade error classes for application boundary handling
 - Public text chat session metadata through `session.info`
-- App integration examples for error handling, streaming, and reset
+- Public text chat interrupt boundary through `session.interrupt()`
+- App-facing text session events through `session.on_event()` and `session.on_state_change()`
+- App integration examples for error handling, streaming, reset, session info, state/events, and interrupt handling
 - Explicit runtime conversation state tracking
 - Plugin-facing state change events
 - Voice-friendly output policy for TTS-enabled sessions
@@ -628,12 +657,22 @@ Live one-turn facade check:
 python scripts/smoke_public_facade.py --provider openai --model gpt-4o-mini --ask "こんにちは。短く返して"
 ```
 
-Basic example checks:
+Basic offline-safe example checks:
 
 ```bash
 python examples/app_error_handling.py
 python examples/public_text_chat.py
 python examples/minimal_app_text_chat.py
+```
+
+Optional app integration examples that may create provider clients and require API keys:
+
+```bash
+python examples/app_streaming_text_chat.py
+python examples/app_reset_text_chat.py
+python examples/app_session_info.py
+python examples/app_state_events.py
+python examples/app_interrupt_text_chat.py
 ```
 
 ---
@@ -688,6 +727,9 @@ examples/
   app_error_handling.py
   app_streaming_text_chat.py
   app_reset_text_chat.py
+  app_session_info.py
+  app_state_events.py
+  app_interrupt_text_chat.py
 
 scripts/
   smoke_public_facade.py
@@ -742,8 +784,11 @@ Detailed documentation is split by responsibility:
 - `docs/release_package_policy.md`
   - Public release package include / exclude rules
 
-- `docs/roadmap_v3.0.md`
-  - Advanced conversation runtime roadmap
+- `docs/roadmap_feature_v4.0.0.md`
+  - App Integration SDK Foundation roadmap
+
+- `docs/roadmap_feature_v5.0.0.md`
+  - Realtime Voice Runtime roadmap
 
 The README is intended to stay as the project entry point. Current release details should live in `docs/RELEASE_NOTES.md` instead of being accumulated here.
 
@@ -753,24 +798,28 @@ Historical release notes are preserved by Git tags and GitHub Releases.
 
 ## Roadmap
 
-Advanced conversation runtime topics are tracked in:
+Current major roadmap topics are tracked in:
 
 ```text
-docs/roadmap_v3.0.md
+docs/roadmap_feature_v4.0.0.md
+docs/roadmap_feature_v5.0.0.md
 ```
 
-The next major direction is to evolve the framework from a simple input-response character system into a more natural real-time AI character conversation runtime.
+v4.0.0 focuses on App Integration SDK Foundation:
 
-Future topics include:
+- stable public text session APIs
+- app-safe session metadata
+- reset and limited interrupt boundaries
+- app-facing event callbacks
+- SDK examples and documentation
 
-- clearer audio pipeline responsibilities
-- provider abstraction
-- conversation state management
-- latency-oriented streaming voice flow
-- interruption / barge-in foundation
-- voice-friendly output policy for TTS-enabled sessions
-- multi-character conversation design
-- richer plugin and hook integration points
+v5.0.0 focuses on Realtime Voice Runtime:
+
+- realtime voice experience improvements
+- stronger TTS interruption behavior
+- LLM streaming cancellation design
+- `voice_vts` realtime interaction improvements
+- always-on microphone / barge-in style behavior
 
 ---
 
