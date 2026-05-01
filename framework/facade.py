@@ -50,10 +50,16 @@ class TextChatSessionInfo:
     provider: str | None
     model: str | None
     route_name: str | None
+    api_version: str = "4.0"
+    session_type: str = "text_chat"
     supports_streaming: bool = True
     supports_reset: bool = True
-    supports_voice: bool = False
-    supports_vts: bool = False
+    supports_interrupt: bool = False
+    supports_events: bool = False
+    supports_close: bool = False
+    supports_voice_input: bool = False
+    supports_voice_output: bool = False
+    supports_live2d: bool = False
 
 
 class TextChatSession:

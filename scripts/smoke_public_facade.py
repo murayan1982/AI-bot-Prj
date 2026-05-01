@@ -160,11 +160,17 @@ def check_session_info_model() -> None:
     _assert(default_info.route_name == "chat", "default route name should be chat")
     _assert(default_info.provider is None, "default route should hide provider")
     _assert(default_info.model is None, "default route should hide model")
+    _assert(default_info.api_version == "4.0", "info should expose API version")
+    _assert(default_info.session_type == "text_chat", "info should expose session type")
     _assert(default_info.supports_streaming, "text facade should support streaming")
     _assert(default_info.supports_reset, "text facade should support reset")
-    _assert(not default_info.supports_voice, "text facade should not expose voice support")
-    _assert(not default_info.supports_vts, "text facade should not expose VTS support")
-
+    _assert(not default_info.supports_interrupt, "text facade should not expose interrupt support yet")
+    _assert(not default_info.supports_events, "text facade should not expose event callbacks yet")
+    _assert(not default_info.supports_close, "text facade should not expose close support yet")
+    _assert(not default_info.supports_voice_input, "text facade should not expose voice input support")
+    _assert(not default_info.supports_voice_output, "text facade should not expose voice output support")
+    _assert(not default_info.supports_live2d, "text facade should not expose Live2D support")
+    
     direct_info = _build_text_chat_info(
         config=config,
         provider="gemini",
@@ -175,6 +181,13 @@ def check_session_info_model() -> None:
     _assert(direct_info.provider == "google", "provider aliases should be normalized")
     _assert(direct_info.model == "custom-gemini-model", "model override should be exposed")
     _assert(direct_info.route_name is None, "direct provider mode should not expose route")
+    _assert(direct_info.api_version == "4.0", "direct info should expose API version")
+    _assert(direct_info.session_type == "text_chat", "direct info should expose session type")
+    _assert(direct_info.supports_streaming, "direct info should support streaming")
+    _assert(direct_info.supports_reset, "direct info should support reset")
+    _assert(not direct_info.supports_voice_input, "direct info should not expose voice input support")
+    _assert(not direct_info.supports_voice_output, "direct info should not expose voice output support")
+    _assert(not direct_info.supports_live2d, "direct info should not expose Live2D support")
 
     print("[OK] TextChatSessionInfo exposes stable public session metadata")
 
